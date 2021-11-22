@@ -1,0 +1,99 @@
+use crate::tag::id3::id3_frame_value::FrameValue::NoValue;
+use std::convert::TryInto;
+use std::str::FromStr;
+
+use crate::tag::id3::id3_frameid::ID3FRAMEID;
+use crate::tag::id3::id3_header_flag::{ID3FRAMEHEADERFLAGSB1, ID3FRAMEHEADERFLAGSB2};
+use crate::tag::id3::id3_header_flag::ID3FRAMEHEADERFLAGSB1::*;
+use crate::tag::id3::id3_header_flag::ID3FRAMEHEADERFLAGSB2::*;
+use crate::tag::traits::{FrameSize, RawSize};
+
+use super::id3_frame_value::{AttachedPictureFrame, FrameValue, TextFrame, UnsyncLyricsFrame};
+
+pub(crate) struct ID3FRAME {
+    frame_id : ID3FRAMEID,
+    /// Size of the frame : heeader include
+    size : u32,
+    flag_byte_1 : Vec<ID3FRAMEHEADERFLAGSB1>,
+    flag_byte_2 : Vec<ID3FRAMEHEADERFLAGSB2>,
+    value : FrameValue
+}
+
+impl ID3FRAME {
+    pub(crate) fn new(buffer: &mut Vec<u8>) -> Option<Self>{
+        println!("buffer lenght : {}", buffer.len());
+        if buffer.len() <= 10 {
+            return None;
+        }
+        let s = String::from_utf8(buffer.drain(0..4).collect()).unwrap();
+        let frame_id = ID3FRAMEID::from_str(s.as_str()).ok()?;
+        let size = u32::from_be_bytes(buffer.drain(0..4).collect::<Vec<u8>>().try_into().unwrap());
+        if (size + 2) as usize >= buffer.len() { return None; }
+        let mut flag_byte_1 = vec![];
+        let mut flag_byte_2 = vec![];
+        let flag1 = buffer.remove(0);
+        let flag2 = buffer.remove(0);
+        let frame_size = size + 10;
+        println!("{} ->  size : {} ", frame_id, frame_size);
+        if (flag1 & (FileAlterPreservation as u8) ) == (FileAlterPreservation as u8) {
+            flag_byte_1.push(FileAlterPreservation)
+        }
+        
+        if (flag1 & (TagAlterPreservation as u8)) == (TagAlterPreservation as u8) {
+            flag_byte_1.push(TagAlterPreservation)
+        }
+        
+        if (flag1 & (ReadOnly as u8)) == (ReadOnly as u8) {
+            flag_byte_1.push(ReadOnly)
+        }
+        
+        if (flag2 & (Compression as u8) ) == Compression as u8  {
+            flag_byte_2.push(Compression)
+        }
+        if (flag2 & Encryption as u8)  == Encryption as u8  {
+            flag_byte_2.push(Encryption);
+        }
+        
+        if (flag2 & (GroupingIdentity) as u8) == (GroupingIdentity as u8) {
+            flag_byte_2.push(GroupingIdentity);
+        }
+        let value = match FrameValue::new(buffer, frame_id, size){
+            Some(f) => f,
+            None => NoValue,
+        };
+        Some(Self {
+            frame_id,
+            size: frame_size,
+            flag_byte_1,
+            flag_byte_2,
+            value
+        })
+    }
+}
+
+impl FrameSize for ID3FRAME {
+    fn total_size(&self) -> u32 {
+        self.size
+    }
+}
+
+impl ID3FRAME {
+    pub (crate) fn get_frame_id(&self) -> ID3FRAMEID {
+        self.frame_id
+    }
+    pub(crate) fn get_frame_value(&self) -> &FrameValue {
+        &self.value
+    }
+    pub(crate) fn as_attached_picture_frame(&self) -> Option<&AttachedPictureFrame> {
+        self.value.as_attached_picture_frame()
+    }
+    pub (crate) fn as_unsynchroned_lyrics_frame(&self) -> Option<&UnsyncLyricsFrame> {
+        self.value.as_unsynchroned_lyrics_frame()
+    }
+    pub(crate) fn as_text_frame(&self) -> Option<&TextFrame>{
+        self.value.as_text_frame() 
+    }
+    pub(crate) fn recalcule_size(&mut self) {
+        self.size = self.value.raw_size() as u32 + 10
+    }
+}
