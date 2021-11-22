@@ -40,9 +40,6 @@ fn read_type_audio_file(file: &mut File) -> Result<(AudioType, usize), FromUtf8E
             println!("unsynchsafe");
             u32::from_be_bytes(buffer[6..].try_into().unwrap())
         };
-        // println!("header size : {}", u32::from_be_bytes(buffer[6..].try_into().unwrap()));
-        // println!("header size synchsafe : {}", synchsafe(u32::from_be_bytes(buffer[6..].try_into().unwrap())));
-        // println!("header size unsynchsafe : {}", unsynchsafe(u32::from_be_bytes(buffer[6..].try_into().unwrap())));
         return Ok( (MP3, size as usize)); 
     }
     if is_flac(&String::from_utf8(buffer[0..4].to_vec())?){ return Ok( (FLAC, 0) );  }
@@ -123,6 +120,9 @@ impl Metadata {
     }
     pub fn album_part(&self) -> Option<String> {
         self.tag.album_part()
+    }
+    pub fn lyrics(&self) -> Option<Vec<String>> {
+        self.tag.lyrics()
     }
 
 }

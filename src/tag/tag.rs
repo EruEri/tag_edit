@@ -110,5 +110,10 @@ impl Tag {
             Self::ID3(tag) => tag.get_text_from_text_frame(&TPOS)
         }
     }
+    pub fn lyrics(&self) -> Option<Vec<String>> {
+        match self {
+            Self::ID3(tag) => tag.get_unsynch_lyrics()
+        }
+    }
 
 }
