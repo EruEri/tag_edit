@@ -8,7 +8,7 @@ use crate::tag::id3::id3_header_flag::ID3FRAMEHEADERFLAGSB1::*;
 use crate::tag::id3::id3_header_flag::ID3FRAMEHEADERFLAGSB2::*;
 use crate::tag::traits::{FrameSize, RawSize};
 
-use super::id3_frame_value::{AttachedPictureFrame, FrameValue, TextFrame, UnsyncLyricsFrame};
+use super::id3_frame_value::{AttachedPictureFrame, CommentFrame, FrameValue, TextFrame, UnsyncLyricsFrame};
 
 pub(crate) struct ID3FRAME {
     frame_id : ID3FRAMEID,
@@ -89,6 +89,9 @@ impl ID3FRAME {
     }
     pub (crate) fn as_unsynchroned_lyrics_frame(&self) -> Option<&UnsyncLyricsFrame> {
         self.value.as_unsynchroned_lyrics_frame()
+    }
+    pub (crate) fn as_comment_frame(&self) -> Option<&CommentFrame>{
+        self.value.as_comment_frame()
     }
     pub(crate) fn as_text_frame(&self) -> Option<&TextFrame>{
         self.value.as_text_frame() 

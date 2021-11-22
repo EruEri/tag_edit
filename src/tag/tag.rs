@@ -7,15 +7,7 @@ pub enum Tag {
 
 impl Tag {
 
-    
-    pub fn test(&self) {
-        let _test = match self {
-            Tag::ID3(tag) => {
-                tag.get_text_from_text_frame(&TOWN)
-            }
-        }; 
-    }
-    pub fn attached_pictures(&self) -> Option<Vec<&Vec<u8>>> {
+    pub fn attached_pictures(&self) -> Vec<&Vec<u8>> {
         match self {
             Self::ID3(t) => t.get_attached_picture()
         }
@@ -113,6 +105,11 @@ impl Tag {
     pub fn lyrics(&self) -> Option<Vec<String>> {
         match self {
             Self::ID3(tag) => tag.get_unsynch_lyrics()
+        }
+    }
+    pub fn comments(&self) -> Option<Vec<String>> {
+        match self {
+            Self::ID3(tag) => tag.get_comments()
         }
     }
 

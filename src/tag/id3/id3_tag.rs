@@ -3,7 +3,6 @@ use crate::tag::id3::id3_header_flag::ID3HeaderFLAG;
 use crate::tag::id3::id3_header_flag::ID3HeaderFLAG::{ExperimentalIndicator, ExtendedHeader, Unsynchronisation};
 use crate::tag::traits::{FrameSize, TagSize};
 use crate::util::function::unsynchsafe;
-
 use super::id3_frameid::ID3FRAMEID;
 
 pub struct ID3TAG {
@@ -84,7 +83,21 @@ impl ID3TAG {
             }
         })
         .collect::<Vec<String>>()
-    )
+     )
+    }
+
+    pub (crate) fn get_comments(&self) -> Option<Vec<String>> {
+        Some(
+            self.frames
+            .iter()
+            .filter_map(|id3_frame| {
+                match id3_frame.as_comment_frame() {
+                    None => None,
+                    Some(cf) => Some(cf.get_text().clone()),
+                }
+            })
+            .collect::<Vec<String>>()
+        )
     }
 
     pub (crate) fn get_text_from_text_frame(&self, frame_id : &ID3FRAMEID) -> Option<String>{
@@ -106,19 +119,32 @@ impl ID3TAG {
         }
     }
 
-    pub fn get_attached_picture(&self) -> Option<Vec<&Vec<u8>>> {
-        let pictures = self.frames.iter().filter(
-            |id3_frame| id3_frame.get_frame_id() == ID3FRAMEID::APIC
-              ).collect::<Vec<&ID3FRAME>>();
-        if pictures.is_empty() {
-            None
-        }else {
-            
-            Some(
-                pictures.into_iter()
-                .map(|frame| frame.as_attached_picture_frame().unwrap().get_picture_data())
-                .collect()
-            )
-        }
+    pub fn get_attached_picture(&self) -> Vec<&Vec<u8> > {
+            self.frames.iter()
+            .filter_map(|id3_frame| {
+                match id3_frame.as_attached_picture_frame() {
+                    None => None,
+                    Some(apf) => Some( apf.get_picture_data())
+                    
+                }
+            })
+            .collect()
     }
+
+
+    // pub fn get_attached_picture(&self) -> Option<Vec<&Vec<u8>>> {
+    //     let pictures = self.frames.iter().filter(
+    //         |id3_frame| id3_frame.get_frame_id() == ID3FRAMEID::APIC
+    //           ).collect::<Vec<&ID3FRAME>>();
+    //     if pictures.is_empty() {
+    //         None
+    //     }else {
+            
+    //         Some(
+    //             pictures.into_iter()
+    //             .map(|frame| frame.as_attached_picture_frame().unwrap().get_picture_data())
+    //             .collect()
+    //         )
+    //     }
+    // }
 }

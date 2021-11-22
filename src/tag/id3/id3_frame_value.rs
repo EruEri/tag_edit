@@ -162,6 +162,15 @@ impl RawSize for CommentFrame{
         1 + 3 + text_len
     }
 }
+impl CommentFrame {
+    pub (crate) fn get_description(&self) -> &String {
+       &self.content_description 
+    }
+
+    pub (crate) fn get_text(&self) -> &String {
+        &self.text
+     }
+}
 
 pub(crate) struct RelativeVolumeAdjustementFrame {
     raw : Vec<u8>
@@ -703,23 +712,29 @@ impl RawSize for FrameValue {
 
 
 impl FrameValue {
-    pub fn as_attached_picture_frame(&self) -> Option<&AttachedPictureFrame>{
+    pub (crate) fn as_attached_picture_frame(&self) -> Option<&AttachedPictureFrame>{
         match self {
             Self::APF(picture_frame) => Some(picture_frame),
             _ => None
         }
     }
-    pub fn as_text_frame(&self) -> Option<&TextFrame>{
+    pub (crate) fn as_text_frame(&self) -> Option<&TextFrame>{
         match self {
             Self::TF(tf) => Some(tf),
             _ => None
         }
     }
 
-    pub fn as_unsynchroned_lyrics_frame(&self) -> Option<&UnsyncLyricsFrame>{
+    pub (crate) fn as_unsynchroned_lyrics_frame(&self) -> Option<&UnsyncLyricsFrame>{
         match self {
             Self::ULF(f) => Some(f),
             _ => None
+        }
+    }
+    pub(crate) fn as_comment_frame(&self) -> Option<&CommentFrame> {
+        match self {
+            Self::CF(cf) => Some(cf),
+            _ => None 
         }
     }
 }

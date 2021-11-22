@@ -6,7 +6,6 @@ use crate::tag::audio_type::AudioType;
 use crate::tag::audio_type::AudioType::{FLAC, MP3, OTHER};
 use crate::tag::id3::id3_tag::ID3TAG;
 use crate::tag::tag::Tag;
-//use crate::util::function::synchsafe;
 use super::tag::id3::id3_header_flag::ID3HeaderFLAG;
 use super::util::function::unsynchsafe;
 
@@ -70,7 +69,7 @@ impl Metadata {
         &self.tag
     }
 
-    pub fn attached_pictures(&self) -> Option<Vec<&Vec<u8>>> {
+    pub fn attached_pictures(&self) -> Vec<&Vec<u8>> {
         self.tag.attached_pictures()
     }
     pub fn artist(&self) -> Option<String>{
