@@ -32,9 +32,9 @@ pub (crate) fn unsynchsafe(input : u32) -> u32 {
 pub(crate) fn vec_to_string(mut vec :Vec<u8>, text_encoding : &TextEncoding) -> Option<String>{
     let vec_len  = vec.len() as u32;
     match text_encoding  {
-        TextEncoding::ISO_8859_1 | TextEncoding::Unicode_UTF_8  => String::from_utf8(vec).ok(),
-        TextEncoding::Unicode_UTF_16 => vec_to_uft16_le(&mut vec, vec_len),
-        TextEncoding::Unicode_BigEndian => vec_to_utf16_be(&mut vec, vec_len),
+        TextEncoding::Iso8859_1 | TextEncoding::UnicodeUtf8  => String::from_utf8(vec).ok(),
+        TextEncoding::UnicodeUtf16 => vec_to_uft16_le(&mut vec, vec_len),
+        TextEncoding::UnicodeBigEndian => vec_to_utf16_be(&mut vec, vec_len),
     }
 } 
 
@@ -90,9 +90,9 @@ pub(crate) fn first_string(buffer : &mut Vec<u8>, text_encoding : &TextEncoding,
         buffer.drain(0..string_vec.len());
     }
     match text_encoding {
-        TextEncoding::ISO_8859_1 | TextEncoding::Unicode_UTF_8 => String::from_utf8(string_vec).ok(),
-        TextEncoding::Unicode_UTF_16 =>  String::from_utf16(&to_u16_le(&string_vec).as_slice()).ok(),
-        TextEncoding::Unicode_BigEndian => String::from_utf16(&to_u16_be(&string_vec).as_slice()).ok(),
+        TextEncoding::Iso8859_1 | TextEncoding::UnicodeUtf8 => String::from_utf8(string_vec).ok(),
+        TextEncoding::UnicodeUtf16 =>  String::from_utf16(&to_u16_le(&string_vec).as_slice()).ok(),
+        TextEncoding::UnicodeBigEndian => String::from_utf16(&to_u16_be(&string_vec).as_slice()).ok(),
     }
 }
 
