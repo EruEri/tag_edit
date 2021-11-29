@@ -12,14 +12,31 @@ use super::id3_frame_value::{AttachedPictureFrame, CommentFrame, FrameValue, Tex
 
 pub(crate) struct ID3FRAME {
     frame_id : ID3FRAMEID,
-    /// Size of the frame : heeader include
+    /// Size of the frame : header include
     size : u32,
-    flag_byte_1 : Vec<ID3FRAMEHEADERFLAGSB1>,
-    flag_byte_2 : Vec<ID3FRAMEHEADERFLAGSB2>,
+    _flag_byte_1 : Vec<ID3FRAMEHEADERFLAGSB1>,
+    _flag_byte_2 : Vec<ID3FRAMEHEADERFLAGSB2>,
     value : FrameValue
 }
 
+impl From<(ID3FRAMEID, FrameValue)> for ID3FRAME {
+    fn from((frame_id,value): (ID3FRAMEID, FrameValue)) -> Self {
+        let _flag_byte_1 = vec![];
+        let _flag_byte_2 = vec![];
+        let size = (value.raw_size() + 10) as u32;
+        Self {
+            frame_id,
+            size,
+            _flag_byte_1,
+            _flag_byte_2,
+            value
+        }
+    }
+}
+
 impl ID3FRAME {
+
+    
     pub(crate) fn new(buffer: &mut Vec<u8>) -> Option<Self>{
         println!("buffer lenght : {}", buffer.len());
         if buffer.len() <= 10 {
@@ -29,33 +46,33 @@ impl ID3FRAME {
         let frame_id = ID3FRAMEID::from_str(s.as_str()).ok()?;
         let size = u32::from_be_bytes(buffer.drain(0..4).collect::<Vec<u8>>().try_into().unwrap());
         if (size + 2) as usize >= buffer.len() { return None; }
-        let mut flag_byte_1 = vec![];
-        let mut flag_byte_2 = vec![];
+        let mut _flag_byte_1 = vec![];
+        let mut _flag_byte_2 = vec![];
         let flag1 = buffer.remove(0);
         let flag2 = buffer.remove(0);
         let frame_size = size + 10;
         println!("{} ->  size : {} ", frame_id, frame_size);
         if (flag1 & (FileAlterPreservation as u8) ) == (FileAlterPreservation as u8) {
-            flag_byte_1.push(FileAlterPreservation)
+            _flag_byte_1.push(FileAlterPreservation)
         }
         
         if (flag1 & (TagAlterPreservation as u8)) == (TagAlterPreservation as u8) {
-            flag_byte_1.push(TagAlterPreservation)
+            _flag_byte_1.push(TagAlterPreservation)
         }
         
         if (flag1 & (ReadOnly as u8)) == (ReadOnly as u8) {
-            flag_byte_1.push(ReadOnly)
+            _flag_byte_1.push(ReadOnly)
         }
         
         if (flag2 & (Compression as u8) ) == Compression as u8  {
-            flag_byte_2.push(Compression)
+            _flag_byte_2.push(Compression)
         }
         if (flag2 & Encryption as u8)  == Encryption as u8  {
-            flag_byte_2.push(Encryption);
+            _flag_byte_2.push(Encryption);
         }
         
         if (flag2 & (GroupingIdentity) as u8) == (GroupingIdentity as u8) {
-            flag_byte_2.push(GroupingIdentity);
+            _flag_byte_2.push(GroupingIdentity);
         }
         let value = match FrameValue::new(buffer, frame_id, size){
             Some(f) => f,
@@ -64,8 +81,8 @@ impl ID3FRAME {
         Some(Self {
             frame_id,
             size: frame_size,
-            flag_byte_1,
-            flag_byte_2,
+            _flag_byte_1,
+            _flag_byte_2,
             value
         })
     }
@@ -78,25 +95,45 @@ impl FrameSize for ID3FRAME {
 }
 
 impl ID3FRAME {
-    pub (crate) fn get_frame_id(&self) -> ID3FRAMEID {
-        self.frame_id
+
+    pub(crate) fn recalcule_size(&mut self) {
+        self.size = self.value.raw_size() as u32 + 10
+    }
+
+    pub (crate) fn get_frame_id(&self) -> &ID3FRAMEID {
+        &self.frame_id
     }
     pub(crate) fn get_frame_value(&self) -> &FrameValue {
         &self.value
     }
+    pub (crate) fn get_frame_value_mut(&mut self) -> &mut FrameValue {
+        &mut self.value
+    }
     pub(crate) fn as_attached_picture_frame(&self) -> Option<&AttachedPictureFrame> {
         self.value.as_attached_picture_frame()
     }
+
+    pub(crate) fn as_attached_picture_frame_mut(&mut self) -> Option<&mut AttachedPictureFrame> {
+        self.value.as_attached_picture_frame_mut()
+    }
+
     pub (crate) fn as_unsynchroned_lyrics_frame(&self) -> Option<&UnsyncLyricsFrame> {
         self.value.as_unsynchroned_lyrics_frame()
     }
+    pub (crate) fn as_unsynchroned_lyrics_frame_mut(&mut self) -> Option<&mut UnsyncLyricsFrame> {
+        self.value.as_unsynchroned_lyrics_frame_mut()
+    }
+
     pub (crate) fn as_comment_frame(&self) -> Option<&CommentFrame>{
         self.value.as_comment_frame()
+    }
+    pub (crate) fn as_comment_frame_mut(&mut self) -> Option<&mut CommentFrame>{
+        self.value.as_comment_frame_mut()
     }
     pub(crate) fn as_text_frame(&self) -> Option<&TextFrame>{
         self.value.as_text_frame() 
     }
-    pub(crate) fn recalcule_size(&mut self) {
-        self.size = self.value.raw_size() as u32 + 10
+    pub(crate) fn as_text_frame_mut(&mut self) -> Option<&mut TextFrame>{
+        self.value.as_text_frame_mut() 
     }
 }

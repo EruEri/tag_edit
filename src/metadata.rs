@@ -75,11 +75,17 @@ impl Metadata {
     pub fn artist(&self) -> Option<String>{
         self.tag.artist()
     }
+    pub fn set_artist(&mut self, name : String) {
+        self.tag.set_artist(name)
+    } 
     pub fn album_artist(&self) -> Option<String> {
         self.tag.album_artist()
     }
     pub fn album(&self) -> Option<String>{
         self.tag.album()
+    }
+    pub fn set_album(&mut self, album: String) {
+        self.tag.set_album(album)
     }
     pub fn genre(&self) -> Option<String> {
         self.tag.genre()
@@ -122,6 +128,14 @@ impl Metadata {
     }
     pub fn lyrics(&self) -> Option<Vec<String>> {
         self.tag.lyrics()
+    }
+    pub fn comments(&self) -> Option<Vec<String>> {
+        Some(
+            self.tag.comments()?
+            .iter()
+            .map( |(_, text)| text.clone())
+            .collect::<Vec<String>>()
+        )
     }
 
 }

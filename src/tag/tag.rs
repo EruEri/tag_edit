@@ -17,6 +17,11 @@ impl Tag {
             Self::ID3(tag ) => tag.get_text_from_text_frame(&TPE1)
         }
     }
+    pub fn set_artist(&mut self, name : String) {
+        match self {
+            Tag::ID3(tag) => tag.set_text_frame(TPE1, name),
+        }
+    }
     pub fn album_artist(&self) -> Option<String> {
         match self {
             Self::ID3(tag) => tag.get_text_from_text_frame(&TPE2)
@@ -26,6 +31,11 @@ impl Tag {
     pub fn album(&self) -> Option<String> {
         match self {
             Self::ID3(t) => t.get_text_from_text_frame(&TALB)
+        }
+    }
+    pub fn set_album(&mut self, album: String) {
+        match self {
+            Tag::ID3(tag) => tag.set_text_frame(TALB, album),
         }
     }
     pub fn genre(&self) -> Option<String> {
@@ -107,7 +117,7 @@ impl Tag {
             Self::ID3(tag) => tag.get_unsynch_lyrics()
         }
     }
-    pub fn comments(&self) -> Option<Vec<String>> {
+    pub fn comments(&self) -> Option<Vec<(String, String)>> {
         match self {
             Self::ID3(tag) => tag.get_comments()
         }

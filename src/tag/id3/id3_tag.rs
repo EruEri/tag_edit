@@ -3,16 +3,17 @@ use crate::tag::id3::id3_header_flag::ID3HeaderFLAG;
 use crate::tag::id3::id3_header_flag::ID3HeaderFLAG::{ExperimentalIndicator, ExtendedHeader, Unsynchronisation};
 use crate::tag::traits::{FrameSize, TagSize};
 use crate::util::function::unsynchsafe;
+use super::id3_frame_value::{FrameValue, TextFrame};
 use super::id3_frameid::ID3FRAMEID;
 
 pub struct ID3TAG {
-    identifier : String,
+    _identifier : String,
     major_version : u8,
-    minor_version : u8,
+    _minor_version : u8,
     size : u32,
-    flags_header : Vec<ID3HeaderFLAG>,
+    _flags_header : Vec<ID3HeaderFLAG>,
     frames : Vec<ID3FRAME>,
-    padding : u32
+    padding : i32
 }
 
 
@@ -21,17 +22,17 @@ impl ID3TAG {
         if buffer.len() <= 10 { return Err(());}
         let id = String::from_utf8(buffer.drain(0..3).collect()).unwrap() ;
         let major_version = buffer.remove(0);
-        let minor_version = buffer.remove(0);
-        let mut flags_header = vec![];
+        let _minor_version = buffer.remove(0);
+        let mut _flags_header = vec![];
         let mut frames = vec![];
         let flag = buffer.remove(0);
-        if (flag & (Unsynchronisation as u8) ) == (Unsynchronisation as u8) { flags_header.push(Unsynchronisation)};
-        if (flag & (ExtendedHeader as u8)) == (ExtendedHeader as u8) { flags_header.push(ExtendedHeader)};
-        if (flag & (ExperimentalIndicator as u8)) == (ExperimentalIndicator as u8) { flags_header.push(ExperimentalIndicator)};
+        if (flag & (Unsynchronisation as u8) ) == (Unsynchronisation as u8) { _flags_header.push(Unsynchronisation)};
+        if (flag & (ExtendedHeader as u8)) == (ExtendedHeader as u8) { _flags_header.push(ExtendedHeader)};
+        if (flag & (ExperimentalIndicator as u8)) == (ExperimentalIndicator as u8) { _flags_header.push(ExperimentalIndicator)};
         let buf  = buffer.drain(0..4).collect::<Vec<u8>>();
         let size_from_buffer = u32::from_be_bytes(
             [buf.get(0).unwrap().clone(), buf.get(1).unwrap().clone(), buf.get(2).unwrap().clone(), buf.get(3).unwrap().clone()]);
-        let size = if !flags_header.contains(&Unsynchronisation) { unsynchsafe(size_from_buffer)} else { size_from_buffer };
+        let size = if !_flags_header.contains(&Unsynchronisation) { unsynchsafe(size_from_buffer)} else { size_from_buffer };
         while buffer.len() > 10 {
             if let Some(frame) = ID3FRAME::new(buffer){
                 frames.push(frame);
@@ -43,14 +44,37 @@ impl ID3TAG {
             }
         }
         Ok (Self {
-            identifier: id,
+            _identifier: id,
             major_version,
-            minor_version,
+            _minor_version,
             size,
-            flags_header,
+            _flags_header,
             frames,
-            padding : (buffer.len() as u32 + 4)
+            padding : (buffer.len() as i32 + 4)
         })
+    }
+
+
+    pub (crate) fn set_text_frame(&mut self, frame_id: ID3FRAMEID, text: String) {
+        let major_version = self.major_version.clone();
+
+        if let Some(frame) = self.get_frame_mut(&frame_id){
+            let text_frame = frame.as_text_frame_mut().unwrap();
+            text_frame.set_text(text, major_version);
+            frame.recalcule_size()
+        }else {
+            let value = TextFrame::new(major_version, text);
+            let frame = (frame_id, FrameValue::TF(value)).into();
+            self.frames.push(frame)
+        }
+        // if let Some(frame) = self.get_text_frame_mut(&frame_id) {
+        //     frame.set_text(text,major_version );
+        // }else {
+        //     let value = TextFrame::new(major_version, text);
+        //     let frame = (frame_id, FrameValue::TF(value)).into();
+        //     self.frames.push(frame)
+        // }
+        self.update_padding_size()
     }
 }
 
@@ -63,7 +87,7 @@ impl TagSize for ID3TAG {
 impl ID3TAG {
 
     pub fn total_size(&self) -> u32 {
-        self.frame_total_size() + self.padding + 10
+        self.frame_total_size() + (self.padding as u32) + 10
     }
     
     pub fn frame_total_size(&self) -> u32 {
@@ -73,6 +97,11 @@ impl ID3TAG {
         }
         size
     }
+    pub (crate) fn update_padding_size(&mut self) {
+        let dif : u32 = self.size - self.frame_total_size();
+        self.padding += dif as i32
+    }
+
     pub (crate) fn get_unsynch_lyrics(&self)-> Option<Vec<String>> {
         Some (self.frames.iter()
         .filter_map(|id3_frame| {
@@ -86,37 +115,46 @@ impl ID3TAG {
      )
     }
 
-    pub (crate) fn get_comments(&self) -> Option<Vec<String>> {
+    pub (crate) fn get_comments(&self) -> Option<Vec<(String, String)>> {
         Some(
             self.frames
             .iter()
             .filter_map(|id3_frame| {
                 match id3_frame.as_comment_frame() {
                     None => None,
-                    Some(cf) => Some(cf.get_text().clone()),
+                    Some(cf) => Some((cf.get_description().clone(), cf.get_text().clone())),
                 }
             })
-            .collect::<Vec<String>>()
+            .collect::<Vec<(String, String)>>()
         )
     }
 
     pub (crate) fn get_text_from_text_frame(&self, frame_id : &ID3FRAMEID) -> Option<String>{
-        if !frame_id.is_text_frame() {
-            None
-        }else {
-          let mut string = self.frames.iter()
-        .filter_map(|id3_frame| { 
-            match id3_frame.as_text_frame(){
-                Some(tf) => if &id3_frame.get_frame_id() == frame_id { Some(tf.get_text())} else {None},
+        self
+        .frames
+        .iter()
+        .find_map(|id3_frame| {
+            match id3_frame.as_text_frame() {
                 None => None,
+                Some(tf) => if id3_frame.get_frame_id() == frame_id { Some(tf.get_text()) } else {None}
             }
         })
-        .collect::<Vec<String>>();
-        if string.len() == 0 { 
-            None 
-        } else { Some(string.remove(0)) }
-
-        }
+    }
+    pub (crate) fn get_text_frame_mut(&mut self, frame_id: &ID3FRAMEID) -> Option<&mut TextFrame> {
+        self
+        .frames
+        .iter_mut()
+        .find(|id3| id3.get_frame_id() == frame_id && frame_id.is_text_frame())?
+        .as_text_frame_mut()
+    }
+    pub(crate) fn get_frame_mut(&mut self, frame_id : &ID3FRAMEID) -> Option<&mut ID3FRAME> {
+        self
+        .frames
+        .iter_mut()
+        .find(|id3| {
+            id3.get_frame_id() == frame_id
+        } )
+        
     }
 
     pub fn get_attached_picture(&self) -> Vec<&Vec<u8> > {
@@ -124,8 +162,7 @@ impl ID3TAG {
             .filter_map(|id3_frame| {
                 match id3_frame.as_attached_picture_frame() {
                     None => None,
-                    Some(apf) => Some( apf.get_picture_data())
-                    
+                    Some(apf) => Some( apf.get_picture_data())  
                 }
             })
             .collect()

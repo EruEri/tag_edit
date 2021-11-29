@@ -2,6 +2,9 @@ use crate::{tag::traits::RawSize, util::{function::{ToU16, ToU32, first_string, 
 
 use super::{code::{event_timing_code::time_stamp_format::TimeStampFormat, picture_code::picture_type:: PictureType, text_code::content_type::TextContent}, id3_frameid::ID3FRAMEID};
 use super::id3_frameid::ID3FRAMEID::*;
+
+
+
 pub(crate) struct UniqueFileIdentifierFrame {
     owner_id : String,
     id : Vec<u8>
@@ -26,8 +29,32 @@ impl RawSize for TextFrame {
     }
 }
 impl TextFrame {
+
+    pub (crate) fn new(tag_version: u8, text: String) -> Self {
+        let text_encoding = if text.is_ascii() { 
+            TextEncoding::Iso8859_1 
+        } else if tag_version == 3 {
+            TextEncoding::UnicodeUtf16
+        } else {
+            TextEncoding::UnicodeUtf8
+         };
+         Self {
+             text_encoding,
+             text
+         }
+    }
     pub(crate) fn get_text(&self) -> String {
         self.text.clone()
+    }
+    pub (crate) fn set_text(&mut self, text: String, tag_version: u8) {
+        if text.is_ascii() {
+            self.text_encoding = TextEncoding::Iso8859_1;
+        }else if tag_version == 3 {
+            self.text_encoding = TextEncoding::UnicodeUtf16;
+        } else if tag_version == 4 {
+            self.text_encoding = TextEncoding::UnicodeUtf8
+        }
+        self.text = text
     }
 }
 
@@ -718,6 +745,12 @@ impl FrameValue {
             _ => None
         }
     }
+    pub (crate) fn as_attached_picture_frame_mut(&mut self) -> Option<&mut AttachedPictureFrame>{
+        match self {
+            Self::APF(picture_frame) => Some(picture_frame),
+            _ => None
+        }
+    }
     pub (crate) fn as_text_frame(&self) -> Option<&TextFrame>{
         match self {
             Self::TF(tf) => Some(tf),
@@ -725,13 +758,33 @@ impl FrameValue {
         }
     }
 
-    pub (crate) fn as_unsynchroned_lyrics_frame(&self) -> Option<&UnsyncLyricsFrame>{
+    pub (crate) fn as_text_frame_mut(&mut self) -> Option<&mut TextFrame>{
+        match self {
+            Self::TF(tf) => Some(tf),
+            _ => None
+        }
+    }
+
+    pub (crate) fn as_unsynchroned_lyrics_frame(& self) -> Option<&UnsyncLyricsFrame>{
+        match self {
+            Self::ULF(f) => Some(f),
+            _ => None
+        }
+    }
+    pub (crate) fn as_unsynchroned_lyrics_frame_mut(&mut self) -> Option<&mut UnsyncLyricsFrame>{
         match self {
             Self::ULF(f) => Some(f),
             _ => None
         }
     }
     pub(crate) fn as_comment_frame(&self) -> Option<&CommentFrame> {
+        match self {
+            Self::CF(cf) => Some(cf),
+            _ => None 
+        }
+    }
+
+    pub(crate) fn as_comment_frame_mut(&mut self) -> Option<&mut CommentFrame> {
         match self {
             Self::CF(cf) => Some(cf),
             _ => None 
