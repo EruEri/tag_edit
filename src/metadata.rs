@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 use std::fs::{File, OpenOptions};
-use std::io::{Read, Seek, SeekFrom};
+use std::io::{Read, Seek, SeekFrom, Error, Write};
 use std::string::FromUtf8Error;
 use crate::tag::audio_type::AudioType;
 use crate::tag::audio_type::AudioType::{FLAC, MP3, OTHER};
@@ -11,8 +11,7 @@ use super::util::function::unsynchsafe;
 
 
 pub struct Metadata{
-    file : File,
-    file_type : AudioType,
+    _file_type : AudioType,
     tag : Tag,
     music_data : Vec<u8>
 }
@@ -61,8 +60,7 @@ impl Metadata {
                 let _ = file.read_to_end(&mut music_data);
                 let tag = ID3TAG::new(&mut buffer).ok()?;
                 Some( Metadata {
-                    file,
-                    file_type: MP3,
+                    _file_type: MP3,
                     tag : Tag::ID3(tag),
                     music_data
                 }   )
@@ -70,6 +68,16 @@ impl Metadata {
             OTHER => todo!("Other not implemented"),
         }
     }
+
+    pub fn write_tag(&self, path : &str) -> Result<(), Error> {
+        let mut file = OpenOptions::new()
+        .create(true) .read(false).write(true).truncate(true)
+        .open(path)?;
+        let _ = file.write(self.tag.as_bytes().as_slice())?;
+        let _ = file.write(self.music_data.as_slice())?;
+        Ok(())
+    }
+
     pub fn tag(&self) -> &Tag {
         &self.tag
     }

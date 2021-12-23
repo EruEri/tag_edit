@@ -2,7 +2,7 @@ use std::iter::FromIterator;
 
 use super::reading_mode::{TextEncoding, NULL_TERMINATE};
 
-const MSBYTE_MASK : u16 = 0xFF00;
+
 const LSBYTE_MASK : u16 = 0x00FF;
 
 pub (crate) fn unsynchsafe(input : u32) -> u32 {
@@ -183,10 +183,8 @@ impl ToBytes for String {
             }
         }
         if null_terminated {
-            if encoding.is_one_byte() {
-                result.push(NULL_TERMINATE);
-            }else {
-                result.push(NULL_TERMINATE);
+            result.push(NULL_TERMINATE);
+            if !encoding.is_one_byte() {
                 result.push(NULL_TERMINATE);
             }
         }

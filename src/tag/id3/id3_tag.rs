@@ -67,6 +67,9 @@ impl ID3TAG {
             flags |= *flag as u8
         }
         bytes.push(flags);
+        self.frames
+        .iter()
+        .for_each(|frame| bytes.append(&mut frame.as_bytes()));
         bytes
     }
 
