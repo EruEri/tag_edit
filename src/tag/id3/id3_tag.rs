@@ -60,13 +60,14 @@ impl ID3TAG {
         bytes.append(&mut self._identifier.clone().into_bytes());
         bytes.push(self.major_version);
         bytes.push(self._minor_version);
-        let mut sync = synchsafe(self.size).to_be_bytes().to_vec();
-        bytes.append(&mut sync);
         let mut flags = 0;
         for flag in self._flags_header.iter() {
             flags |= *flag as u8
         }
         bytes.push(flags);
+        let mut sync = synchsafe(self.size).to_be_bytes().to_vec();
+        bytes.append(&mut sync);
+
         self.frames
         .iter()
         .for_each(|frame| bytes.append(&mut frame.as_bytes()));
