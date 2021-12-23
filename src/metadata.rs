@@ -71,7 +71,7 @@ impl Metadata {
 
     pub fn write_tag(&self, path : &str) -> Result<(), Error> {
         let mut file = OpenOptions::new()
-        .create(true) .read(false).write(true).truncate(true)
+        .create(true).read(false).write(true).truncate(true)
         .open(path)?;
         let _ = file.write(self.tag.as_bytes().as_slice())?;
         let _ = file.write(self.music_data.as_slice())?;

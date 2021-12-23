@@ -96,10 +96,10 @@ impl ID3TAG {
         }
         size
     }
-    pub (crate) fn update_padding_size(&mut self) {
-        let dif : u32 = self.size - self.frame_total_size();
-        self.padding += dif as i32
-    }
+    // pub (crate) fn update_padding_size(&mut self) {
+    //     let dif : u32 = self.size - self.frame_total_size();
+    //     self.padding += dif as i32
+    // }
 
     pub (crate) fn set_text_frame(&mut self, frame_id: ID3FRAMEID, text: String) {
         let major_version = self.major_version.clone();
@@ -120,7 +120,7 @@ impl ID3TAG {
         //     let frame = (frame_id, FrameValue::TF(value)).into();
         //     self.frames.push(frame)
         // }
-        self.update_padding_size()
+        // self.update_padding_size()
     }
 
     pub (crate) fn get_unsynch_lyrics(&self)-> Option<Vec<String>> {

@@ -161,7 +161,7 @@ impl ToBytes for String {
         let mut result = vec![];
         match encoding {
             TextEncoding::Iso8859_1 | TextEncoding::UnicodeUtf8 => {
-                self.clone().into_bytes();
+                result = self.clone().into_bytes();
             },
             TextEncoding::UnicodeUtf16 => {
                 let vec : Vec<u16> = self.clone().encode_utf16().collect();
