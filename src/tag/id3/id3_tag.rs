@@ -71,6 +71,7 @@ impl ID3TAG {
         self.frames
         .iter()
         .for_each(|frame| bytes.append(&mut frame.as_bytes()));
+        bytes.append(&mut  vec![0u8;self.padding as usize]);
         bytes
     }
 
