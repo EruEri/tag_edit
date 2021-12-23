@@ -89,7 +89,7 @@ impl ID3FRAME {
 
     pub (crate) fn as_bytes(&self) -> Vec<u8> {
         let mut bytes = vec![];
-        bytes.push(self.frame_id as u8);
+        bytes.append(&mut self.frame_id.to_string().into_bytes());
         bytes.append(&mut self.size.to_be_bytes().to_vec());
         let mut flag1 = 0;
         let mut flag2 = 0;
