@@ -11,7 +11,7 @@ pub(crate) struct UniqueFileIdentifierFrame {
 }
 impl RawSize for UniqueFileIdentifierFrame {
     fn raw_size(&self) -> usize {
-        self.owner_id.len() + self.id.len()
+        self.raw_bytes().len()
     }
     fn raw_bytes(&self) -> Vec<u8> {
         let mut bytes = vec![];
@@ -28,11 +28,7 @@ pub(crate) struct TextFrame {
 }
 impl RawSize for TextFrame {
     fn raw_size(&self) -> usize {
-        1 + if self.text_encoding.is_one_byte() {
-            self.text.len() 
-        } else {
-            self.text.len() * 2
-        }
+        self.raw_bytes().len()
     }
 
     fn raw_bytes(&self) -> Vec<u8> {
@@ -79,12 +75,7 @@ pub(crate) struct UserInfoFrame{
 }
 impl RawSize for UserInfoFrame {
     fn raw_size(&self) -> usize {
-        let text_len = if self.text_encoding.is_one_byte() {
-            self.description.len() + self.text.len()
-        }else {
-            (self.description.len() * 2) + (self.text.len() * 2)
-        };
-        1 + text_len
+        self.raw_bytes().len()
     }
 
     fn raw_bytes(&self) -> Vec<u8> {
@@ -116,11 +107,7 @@ pub(crate) struct InvolvedPeopleFrame {
 }
 impl RawSize for InvolvedPeopleFrame {
     fn raw_size(&self) -> usize {
-        1 + if self.text_encoding.is_one_byte() {
-            self.people_list.len() 
-        } else {
-            self.people_list.len() * 2
-        }
+        self.raw_bytes().len()
     }
     fn raw_bytes(&self) -> Vec<u8> {
         let mut bytes = vec![];
@@ -196,12 +183,7 @@ pub(crate) struct UnsyncLyricsFrame{
 }
 impl RawSize for UnsyncLyricsFrame {
     fn raw_size(&self) -> usize {
-        let text_len = if self.text_encoding.is_one_byte() {
-            self.content_description.len() + self.text.len()
-        }else {
-            (self.content_description.len() * 2) + (self.text.len() * 2)
-        };
-        1 + 3 + text_len
+        self.raw_bytes().len()
     }
     fn raw_bytes(&self) -> Vec<u8> {
         let mut bytes = vec![];
@@ -247,12 +229,7 @@ pub (crate) struct CommentFrame {
 }
 impl RawSize for CommentFrame{
     fn raw_size(&self) -> usize {
-        let text_len = if self.text_encoding.is_one_byte() {
-            self.content_description.len() + self.text.len()
-        }else {
-            (self.content_description.len() * 2) + (self.text.len() * 2)
-        };
-        1 + 3 + text_len
+        self.raw_bytes().len()
     }
 
     fn raw_bytes(&self) -> Vec<u8> {
@@ -317,12 +294,7 @@ pub(crate) struct  AttachedPictureFrame {
 }
 impl RawSize for AttachedPictureFrame{
     fn raw_size(&self) -> usize {
-        let description_size = if self.text_encode.is_one_byte() {
-            self.description.len()
-        }else {
-            self.description.len() * 2
-        };
-        1 + self.mime_type.len() + 1 + description_size + self.picture_data.len()
+        self.raw_bytes().len()
     }
 
     fn raw_bytes(&self) -> Vec<u8> {
@@ -350,12 +322,7 @@ pub(crate) struct GeneralEncapsulatedObjectFrame {
 }
 impl RawSize for GeneralEncapsulatedObjectFrame{
     fn raw_size(&self) -> usize {
-        let filename_size = if self.text_encoding.is_one_byte() {
-            self.filename.len()
-        }else {
-            self.filename.len() * 2
-        };
-        1 + self.mime_type.len() + filename_size + self.content.len() + self.encapsulated_object.len()
+        self.raw_bytes().len()
     }
     fn raw_bytes(&self) -> Vec<u8> {
         let mut bytes = vec![];
@@ -533,7 +500,7 @@ pub(crate) struct PrivateFrame {
 
 impl RawSize for PrivateFrame {
     fn raw_size(&self) -> usize {
-        self.owner_id.len() + self.private_data.len()
+        self.owner_id.len() + 1 /*null terminated bytes*/ + self.private_data.len()
     }
     fn raw_bytes(&self) -> Vec<u8> {
         let mut bytes = vec![];
