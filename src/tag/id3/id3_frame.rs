@@ -86,6 +86,24 @@ impl ID3FRAME {
             value
         })
     }
+
+    pub (crate) fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.push(self.frame_id as u8);
+        bytes.append(&mut self.size.to_be_bytes().to_vec());
+        let mut flag1 = 0;
+        let mut flag2 = 0;
+        for flag in self._flag_byte_1.iter(){
+            flag1 |= *flag as u8
+        }
+        for flag in self._flag_byte_2.iter(){
+            flag2 |= *flag as u8
+        } 
+        bytes.push(flag1);
+        bytes.push(flag2);
+        bytes.append(&mut self.value.raw_bytes());
+        bytes
+    }
 }
 
 impl FrameSize for ID3FRAME {

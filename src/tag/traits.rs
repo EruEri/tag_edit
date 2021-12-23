@@ -11,4 +11,6 @@ pub(crate) trait RawSize {
     /// For the Vec<Items> :
     /// raw_size = sizeof Item * Vector's lenght
     fn raw_size(&self) -> usize;
+
+    fn raw_bytes(&self) -> Vec<u8>;
 }

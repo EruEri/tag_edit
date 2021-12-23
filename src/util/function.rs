@@ -1,6 +1,9 @@
 use std::iter::FromIterator;
 
-use super::reading_mode::TextEncoding;
+use super::reading_mode::{TextEncoding, NULL_TERMINATE};
+
+const MSBYTE_MASK : u16 = 0xFF00;
+const LSBYTE_MASK : u16 = 0x00FF;
 
 pub (crate) fn unsynchsafe(input : u32) -> u32 {
     let mut out : u32 = 0;
@@ -14,7 +17,7 @@ pub (crate) fn unsynchsafe(input : u32) -> u32 {
     out
 }
 
-/*pub (crate) fn synchsafe(input : u32) -> u32 {
+pub (crate) fn synchsafe(input : u32) -> u32 {
     let mut input_copie = input;
     let mut out : u32 = 0x7F;
     let mut mask : u32 = out;
@@ -27,7 +30,50 @@ pub (crate) fn unsynchsafe(input : u32) -> u32 {
         input_copie = out;
     }
     out
-}*/
+}
+
+/// Convert a string into a Vector of u8
+/// String are cloned in the function
+// pub(crate) fn string_to_vec(string: &String, encoding: TextEncoding, null_terminated : bool) -> Vec<u8> {
+//     if encoding.is_one_byte() {
+//         let mut vec = string.clone().into_bytes();
+//         if null_terminated {
+//             vec.push(NULL_TERMINATE);
+//         }
+//         vec 
+//     }else {
+//         let mut vec = vecu16_to_vecu8(encoding, string.clone().encode_utf16().collect());
+//         if null_terminated {
+//             vec.push(NULL_TERMINATE);
+//             vec.push(NULL_TERMINATE);
+//         }
+//         vec
+//     }
+// } 
+// fn vecu16_to_vecu8(encoding : TextEncoding, vec : Vec<u16>) -> Vec<u8> {
+//     let mut result = vec![];
+//     match encoding {
+//         TextEncoding::Iso8859_1 | TextEncoding::UnicodeUtf8 => unreachable!("Not supposed to be called with an 1 byte encoding"),
+//         TextEncoding::UnicodeUtf16 => {
+//             for short in vec.iter() {
+//                 let msbyte = (*short >> 8) as u8;
+//                 let lsbyte = (short & LSBYTE_MASK) as u8;
+//                 result.push(lsbyte);
+//                 result.push(msbyte);
+//             }
+//             result
+//         },
+//         TextEncoding::UnicodeBigEndian => {
+//             for short in vec.iter() {
+//                 let msbyte = ((*short) >> 8) as u8;
+//                 let lsbyte = (short & LSBYTE_MASK) as u8;
+//                 result.push(msbyte);
+//                 result.push(lsbyte); 
+//             }
+//             result
+//         }
+//     }
+// }
 
 pub(crate) fn vec_to_string(mut vec :Vec<u8>, text_encoding : &TextEncoding) -> Option<String>{
     let vec_len  = vec.len() as u32;
@@ -106,12 +152,54 @@ pub (crate) fn split_to_string_utf16(buffer : &Vec<u16>) -> Vec<String> {
     splits.into_iter().filter(|s|  !s.is_empty()).map(|s| String::from_utf16_lossy(s.into())).collect()
 }
 
+pub(crate) trait ToBytes{
+    fn to_bytes(&self, text_encoding : &TextEncoding, null_terminated : bool) -> Vec<u8>;
+}
+
+impl ToBytes for String {
+    fn to_bytes(&self, encoding : &TextEncoding, null_terminated : bool) -> Vec<u8> {
+        let mut result = vec![];
+        match encoding {
+            TextEncoding::Iso8859_1 | TextEncoding::UnicodeUtf8 => {
+                self.clone().into_bytes();
+            },
+            TextEncoding::UnicodeUtf16 => {
+                let vec : Vec<u16> = self.clone().encode_utf16().collect();
+                for short in vec.iter() {
+                    let msbyte = (*short >> 8) as u8;
+                    let lsbyte = (short & LSBYTE_MASK) as u8;
+                    result.push(lsbyte);
+                    result.push(msbyte);
+                }
+            },
+            TextEncoding::UnicodeBigEndian => {
+                let vec : Vec<u16> = self.clone().encode_utf16().collect();
+                for short in vec.iter() {
+                    let msbyte = ((*short) >> 8) as u8;
+                    let lsbyte = (short & LSBYTE_MASK) as u8;
+                    result.push(msbyte);
+                    result.push(lsbyte); 
+                }
+            }
+        }
+        if null_terminated {
+            if encoding.is_one_byte() {
+                result.push(NULL_TERMINATE);
+            }else {
+                result.push(NULL_TERMINATE);
+                result.push(NULL_TERMINATE);
+            }
+        }
+        result
+    }
+    
+}
+
 pub trait ToU32 {
     fn to_u32_be(&self) -> Option<u32>;
 }
 pub trait ToU16 {
     fn to_u16_be(&self) -> Option<u16>;
-
 }
 
 impl ToU32 for Vec<u8> {

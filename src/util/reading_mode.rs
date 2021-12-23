@@ -1,3 +1,5 @@
+pub(crate) const NULL_TERMINATE : u8 = 0;
+
 #[repr(u8)]
 #[derive(Copy, Clone, Debug)]
 pub enum TextEncoding {

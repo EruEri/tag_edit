@@ -1,6 +1,6 @@
-use crate::{tag::traits::RawSize, util::{function::{ToU16, ToU32, first_string, split_to_string_utf16, split_to_string_utf8, to_u16_le, vec_to_string}, reading_mode::TextEncoding}};
+use crate::{tag::traits::RawSize, util::{function::{ToU16, ToU32, first_string, split_to_string_utf16, split_to_string_utf8, to_u16_le, vec_to_string, ToBytes}, reading_mode::{TextEncoding, NULL_TERMINATE}}};
 
-use super::{code::{event_timing_code::time_stamp_format::TimeStampFormat, picture_code::picture_type:: PictureType, text_code::content_type::TextContent}, id3_frameid::ID3FRAMEID};
+use super::{code::{event_timing_code::time_stamp_format::TimeStampFormat, picture_code::picture_type:: PictureType}, id3_frameid::ID3FRAMEID};
 use super::id3_frameid::ID3FRAMEID::*;
 
 
@@ -12,6 +12,13 @@ pub(crate) struct UniqueFileIdentifierFrame {
 impl RawSize for UniqueFileIdentifierFrame {
     fn raw_size(&self) -> usize {
         self.owner_id.len() + self.id.len()
+    }
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.append(&mut self.owner_id.clone().into_bytes());
+        bytes.push(NULL_TERMINATE);
+        bytes.append(&mut self.id.clone());
+        bytes
     }
 }
 
@@ -26,6 +33,13 @@ impl RawSize for TextFrame {
         } else {
             self.text.len() * 2
         }
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.push(self.text_encoding as u8);
+        bytes.append(&mut self.text.to_bytes(&self.text_encoding, false));
+        bytes
     }
 }
 impl TextFrame {
@@ -72,6 +86,15 @@ impl RawSize for UserInfoFrame {
         };
         1 + text_len
     }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.push(self.text_encoding as u8);
+        bytes.append(&mut self.description.to_bytes(&self.text_encoding, true));
+        bytes.append(&mut self.text.to_bytes(&self.text_encoding, false));
+        bytes
+    }
+    
 }
 
 pub(crate) struct UrlFrame {
@@ -80,6 +103,10 @@ pub(crate) struct UrlFrame {
 impl RawSize for UrlFrame {
     fn raw_size(&self) -> usize {
         self.url.len()
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.url.clone().into_bytes()
     }
 }
 
@@ -95,6 +122,14 @@ impl RawSize for InvolvedPeopleFrame {
             self.people_list.len() * 2
         }
     }
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.push(self.text_encoding as u8);
+        bytes.append(&mut self.people_list.to_bytes(&self.text_encoding, false));
+        bytes
+    }
+
+
 }
 pub (crate) struct MusicCdIdframe {
     cd_toc : Vec<u8>
@@ -102,6 +137,9 @@ pub (crate) struct MusicCdIdframe {
 impl RawSize for MusicCdIdframe {
     fn raw_size(&self) -> usize {
         self.cd_toc.len()
+    }
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.cd_toc.clone()
     }
 }
 
@@ -113,6 +151,13 @@ impl RawSize for EventTimingFrame {
     fn raw_size(&self) -> usize {
         1 + self.raw.len()
     }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.push(self.time_stamp_format as u8);
+        bytes.append(&mut self.raw.clone());
+        bytes
+    }
 }
 
 pub (crate) struct LocationLookupTableFrame {
@@ -123,6 +168,9 @@ impl RawSize for LocationLookupTableFrame{
     fn raw_size(&self) -> usize {
         self.raw.len()
     }
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.raw.clone()
+    }
 }
 
 pub(crate) struct  SyncTempoCodeFrame {
@@ -132,6 +180,12 @@ pub(crate) struct  SyncTempoCodeFrame {
 impl RawSize for SyncTempoCodeFrame {
     fn raw_size(&self) -> usize {
         1 + self.tempo_data.len()
+    }
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.push(self.time_stamp_format as u8);
+        bytes.append(&mut self.tempo_data.clone());
+        bytes
     }
 }
 pub(crate) struct UnsyncLyricsFrame{
@@ -148,6 +202,14 @@ impl RawSize for UnsyncLyricsFrame {
             (self.content_description.len() * 2) + (self.text.len() * 2)
         };
         1 + 3 + text_len
+    }
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.push(self.text_encoding as u8);
+        bytes.append(&mut self.language.clone().into_bytes());
+        bytes.append(&mut self.content_description.to_bytes(&self.text_encoding, true));
+        bytes.append(&mut self.text.to_bytes(&self.text_encoding, false));
+        bytes
     }
 }
 impl UnsyncLyricsFrame {
@@ -171,6 +233,10 @@ impl RawSize for SyncLyricsFrame {
     fn raw_size(&self) -> usize {
         self.raw.len()
     }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.raw.clone()
+    }
 }
 
 pub (crate) struct CommentFrame {
@@ -187,6 +253,15 @@ impl RawSize for CommentFrame{
             (self.content_description.len() * 2) + (self.text.len() * 2)
         };
         1 + 3 + text_len
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.push(self.text_encoding as u8);
+        bytes.append(&mut self.language.clone().into_bytes());
+        bytes.append(&mut self.content_description.to_bytes(&self.text_encoding, true));
+        bytes.append(&mut self.text.to_bytes(&self.text_encoding, false));
+        bytes
     }
 }
 impl CommentFrame {
@@ -206,6 +281,9 @@ impl RawSize for RelativeVolumeAdjustementFrame{
     fn raw_size(&self) -> usize {
         self.raw.len()
     }
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.raw.clone()
+    }
 }
 pub(crate) struct EqualiisationFrame {
     raw : Vec<u8>
@@ -214,6 +292,9 @@ impl RawSize for EqualiisationFrame{
     fn raw_size(&self) -> usize {
         self.raw.len()
     }
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.raw.clone()
+    }
 }
 pub(crate) struct ReverbFrame {
     raw : Vec<u8>
@@ -221,6 +302,9 @@ pub(crate) struct ReverbFrame {
 impl RawSize for ReverbFrame{
     fn raw_size(&self) -> usize {
         self.raw.len()
+    }
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.raw.clone()
     }
 }
 
@@ -239,6 +323,16 @@ impl RawSize for AttachedPictureFrame{
             self.description.len() * 2
         };
         1 + self.mime_type.len() + 1 + description_size + self.picture_data.len()
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.push(self.text_encode as u8);
+        bytes.append(&mut self.mime_type.to_bytes(&TextEncoding::Iso8859_1, true));
+        bytes.push(self.picture_type as u8);
+        bytes.append(&mut self.description.to_bytes(&self.text_encode, true));
+        bytes.append(&mut self.picture_data.clone());
+        bytes
     }
 }
 impl AttachedPictureFrame {
@@ -263,6 +357,18 @@ impl RawSize for GeneralEncapsulatedObjectFrame{
         };
         1 + self.mime_type.len() + filename_size + self.content.len() + self.encapsulated_object.len()
     }
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.push(self.text_encoding as u8);
+        bytes.append(&mut self.mime_type.to_bytes(&TextEncoding::Iso8859_1, true));
+        bytes.append(&mut self.filename.to_bytes(&self.text_encoding, true));
+        bytes.push(NULL_TERMINATE);
+        if self.text_encoding.is_one_byte(){
+            bytes.push(NULL_TERMINATE);
+        }
+        bytes.append(&mut self.encapsulated_object.clone());
+        bytes
+    }
 }
 
 pub(crate) struct PlayCounterFrame {
@@ -272,6 +378,9 @@ impl RawSize for PlayCounterFrame{
     fn raw_size(&self) -> usize {
         self.raw.len()
     }
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.raw.clone()
+    }
 }
 pub(crate) struct PopularimeterFrame {
     raw : Vec<u8>
@@ -279,6 +388,9 @@ pub(crate) struct PopularimeterFrame {
 impl RawSize for PopularimeterFrame{
     fn raw_size(&self) -> usize {
         self.raw.len()
+    }
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.raw.clone()
     }
 }
 pub(crate) struct RecommendedBufferSizeFrame {
@@ -289,6 +401,13 @@ pub(crate) struct RecommendedBufferSizeFrame {
 impl RawSize for RecommendedBufferSizeFrame{
     fn raw_size(&self) -> usize {
         4 + 1 + 4 /* 9 lol */
+    }
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.append(&mut self.buffer_size.to_be_bytes().to_vec());
+        bytes.push(self.embedded_info_flag as u8);
+        bytes.append(&mut self.offet_next_tag.to_be_bytes().to_vec());
+        bytes
     }
 }
 
@@ -302,6 +421,15 @@ impl RawSize for AudioEncryptionFrame {
     fn raw_size(&self) -> usize {
         self.owner_id.len() + 2 + 2 + self.encryption_info.len()
     }
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.append(&mut self.owner_id.to_bytes(&TextEncoding::Iso8859_1, true));
+        bytes.append(&mut self.preview_start.to_be_bytes().to_vec());
+        bytes.append(&mut self.preview_lenght.to_be_bytes().to_vec());
+        bytes.append(&mut self.encryption_info.clone());
+        bytes
+    }
+
 }
 pub (crate) struct LinkedInfoFrame {
     raw : Vec<u8>
@@ -309,6 +437,9 @@ pub (crate) struct LinkedInfoFrame {
 impl RawSize for LinkedInfoFrame{
     fn raw_size(&self) -> usize {
         self.raw.len()
+    }
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.raw.clone()
     }
 }
 
@@ -319,6 +450,9 @@ pub(crate) struct PositionSyncFrame {
 impl RawSize for PositionSyncFrame{
     fn raw_size(&self) -> usize {
         self.raw.len()
+    }
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.raw.clone()
     }
 }
 pub(crate) struct TermsUseFrame {
@@ -334,6 +468,13 @@ impl RawSize for TermsUseFrame {
             self.text.len() * 2
         }
     }
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.push(self.text_encoding as u8);
+        bytes.append(&mut self.language.clone().into_bytes());
+        bytes.append(&mut self.text.to_bytes(&self.text_encoding, false));
+        bytes
+    }
 }
 
 pub(crate) struct OwnershipFrame {
@@ -342,6 +483,9 @@ pub(crate) struct OwnershipFrame {
 impl RawSize for OwnershipFrame{
     fn raw_size(&self) -> usize {
         self.raw.len()
+    }
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.raw.clone()
     }
 }
 
@@ -352,6 +496,10 @@ impl RawSize for CommercialFrame{
     fn raw_size(&self) -> usize {
         self.raw.len()
     }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.raw.clone()
+    }
 }
 
 pub(crate) struct EncryptionMethodRegistationFrame {
@@ -361,6 +509,10 @@ impl RawSize for EncryptionMethodRegistationFrame{
     fn raw_size(&self) -> usize {
         self.raw.len()
     }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.raw.clone()
+    }
 }
 pub(crate) struct GroupIdentificationRegistationFrame {
     raw : Vec<u8>
@@ -368,6 +520,9 @@ pub(crate) struct GroupIdentificationRegistationFrame {
 impl RawSize for GroupIdentificationRegistationFrame{
     fn raw_size(&self) -> usize {
         self.raw.len()
+    }
+    fn raw_bytes(&self) -> Vec<u8> {
+        self.raw.clone()
     }
 }
 
@@ -379,6 +534,12 @@ pub(crate) struct PrivateFrame {
 impl RawSize for PrivateFrame {
     fn raw_size(&self) -> usize {
         self.owner_id.len() + self.private_data.len()
+    }
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.append(&mut self.owner_id.to_bytes(&TextEncoding::Iso8859_1, true));
+        bytes.append(&mut self.private_data.clone());
+        bytes
     }
 }
 
@@ -733,6 +894,43 @@ impl RawSize for FrameValue {
             FrameValue::Undefined(raw) => raw.len(),
             FrameValue::ICFF(_) => 3,
             Self::NoValue => 0,
+        }
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        match self{
+            FrameValue::UFIF(ufif) => ufif.raw_bytes(),
+            FrameValue::TF(fv) => fv.raw_bytes(),
+            FrameValue::UIF(fv) => fv.raw_bytes(),
+            FrameValue::UF(fv) => fv.raw_bytes(),
+            FrameValue::IPF(fv) => fv.raw_bytes(),
+            FrameValue::MCIF(fv) => fv.raw_bytes(),
+            FrameValue::ETF(fv) => fv.raw_bytes(),
+            FrameValue::LLTF(fv) => fv.raw_bytes(),
+            FrameValue::SYCF(fv) => fv.raw_bytes(),
+            FrameValue::ULF(fv) => fv.raw_bytes(),
+            FrameValue::SLF(fv) => fv.raw_bytes(),
+            FrameValue::CF(fv) => fv.raw_bytes(),
+            FrameValue::RVAF(fv) => fv.raw_bytes(),
+            FrameValue::EF(fv) => fv.raw_bytes(),
+            FrameValue::RF(fv) => fv.raw_bytes(),
+            FrameValue::APF(fv) => fv.raw_bytes(),
+            FrameValue::GEOF(fv) => fv.raw_bytes(),
+            FrameValue::PCF(fv) => fv.raw_bytes(),
+            FrameValue::PF(fv) => fv.raw_bytes(),
+            FrameValue::RBSF(fv) => fv.raw_bytes(),
+            FrameValue::AEF(fv) => fv.raw_bytes(),
+            FrameValue::LIF(fv) => fv.raw_bytes(),
+            FrameValue::PSF(fv) => fv.raw_bytes(),
+            FrameValue::TUF(fv) => fv.raw_bytes(),
+            FrameValue::OF(fv) => fv.raw_bytes(),
+            FrameValue::CommercialF(fv) => fv.raw_bytes(),
+            FrameValue::EMRF(fv) => fv.raw_bytes(),
+            FrameValue::GIRF(fv) => fv.raw_bytes(),
+            FrameValue::PrivF(fv) => fv.raw_bytes(),
+            FrameValue::Undefined(raw) => raw.clone(),
+            FrameValue::ICFF(c) => c.to_be_bytes().to_vec(),
+            Self::NoValue => vec![],
         }
     }
 }

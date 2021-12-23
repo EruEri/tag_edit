@@ -2,7 +2,7 @@ use crate::tag::id3::id3_frame::ID3FRAME;
 use crate::tag::id3::id3_header_flag::ID3HeaderFLAG;
 use crate::tag::id3::id3_header_flag::ID3HeaderFLAG::{ExperimentalIndicator, ExtendedHeader, Unsynchronisation};
 use crate::tag::traits::{FrameSize, TagSize};
-use crate::util::function::unsynchsafe;
+use crate::util::function::{unsynchsafe, synchsafe};
 use super::id3_frame_value::{FrameValue, TextFrame};
 use super::id3_frameid::ID3FRAMEID;
 
@@ -54,28 +54,22 @@ impl ID3TAG {
         })
     }
 
+    pub(crate) fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
 
-    pub (crate) fn set_text_frame(&mut self, frame_id: ID3FRAMEID, text: String) {
-        let major_version = self.major_version.clone();
-
-        if let Some(frame) = self.get_frame_mut(&frame_id){
-            let text_frame = frame.as_text_frame_mut().unwrap();
-            text_frame.set_text(text, major_version);
-            frame.recalcule_size()
-        }else {
-            let value = TextFrame::new(major_version, text);
-            let frame = (frame_id, FrameValue::TF(value)).into();
-            self.frames.push(frame)
+        bytes.append(&mut self._identifier.clone().into_bytes());
+        bytes.push(self.major_version);
+        bytes.push(self._minor_version);
+        let mut sync = synchsafe(self.size).to_be_bytes().to_vec();
+        bytes.append(&mut sync);
+        let mut flags = 0;
+        for flag in self._flags_header.iter() {
+            flags |= *flag as u8
         }
-        // if let Some(frame) = self.get_text_frame_mut(&frame_id) {
-        //     frame.set_text(text,major_version );
-        // }else {
-        //     let value = TextFrame::new(major_version, text);
-        //     let frame = (frame_id, FrameValue::TF(value)).into();
-        //     self.frames.push(frame)
-        // }
-        self.update_padding_size()
+        bytes.push(flags);
+        bytes
     }
+
 }
 
 impl TagSize for ID3TAG {
@@ -100,6 +94,28 @@ impl ID3TAG {
     pub (crate) fn update_padding_size(&mut self) {
         let dif : u32 = self.size - self.frame_total_size();
         self.padding += dif as i32
+    }
+
+    pub (crate) fn set_text_frame(&mut self, frame_id: ID3FRAMEID, text: String) {
+        let major_version = self.major_version.clone();
+
+        if let Some(frame) = self.get_frame_mut(&frame_id){
+            let text_frame = frame.as_text_frame_mut().unwrap();
+            text_frame.set_text(text, major_version);
+            frame.recalcule_size()
+        }else {
+            let value = TextFrame::new(major_version, text);
+            let frame = (frame_id, FrameValue::TF(value)).into();
+            self.frames.push(frame)
+        }
+        // if let Some(frame) = self.get_text_frame_mut(&frame_id) {
+        //     frame.set_text(text,major_version );
+        // }else {
+        //     let value = TextFrame::new(major_version, text);
+        //     let frame = (frame_id, FrameValue::TF(value)).into();
+        //     self.frames.push(frame)
+        // }
+        self.update_padding_size()
     }
 
     pub (crate) fn get_unsynch_lyrics(&self)-> Option<Vec<String>> {
@@ -140,7 +156,7 @@ impl ID3TAG {
             }
         })
     }
-    pub (crate) fn get_text_frame_mut(&mut self, frame_id: &ID3FRAMEID) -> Option<&mut TextFrame> {
+    pub (crate) fn _get_text_frame_mut(&mut self, frame_id: &ID3FRAMEID) -> Option<&mut TextFrame> {
         self
         .frames
         .iter_mut()
@@ -167,6 +183,8 @@ impl ID3TAG {
             })
             .collect()
     }
+
+   
 
 
     // pub fn get_attached_picture(&self) -> Option<Vec<&Vec<u8>>> {
