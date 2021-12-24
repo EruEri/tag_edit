@@ -1,4 +1,4 @@
-use crate::{tag::{traits::{RawSize, ToBytes}, reading_mode::{TextEncoding, NULL_TERMINATE}}, util::function::{ToU16, ToU32, first_string, split_to_string_utf16, split_to_string_utf8, to_u16_le, vec_to_string}};
+use crate::{tag::{traits::{RawSize, ToBytes, StringConvert, SplitString}, reading_mode::{TextEncoding, NULL_TERMINATE}}, util::function::{ToU16, ToU32, first_string, split_to_string_utf16, split_to_string_utf8, to_u16_le, vec_to_string}};
 
 use super::{code::{event_timing_code::time_stamp_format::TimeStampFormat, picture_code::picture_type:: PictureType}, id3_frameid::ID3FRAMEID};
 use super::id3_frameid::ID3FRAMEID::*;
@@ -553,7 +553,7 @@ impl FrameValue {
     pub (crate) fn new (buffer : &mut Vec<u8>, frame_id : ID3FRAMEID, size : u32) -> Option<Self> {
         match frame_id {
             TCMP => {
-                let string = String::from_utf8(buffer.drain(0..(size as usize)).collect()).ok()?;
+                let string = buffer.drain(0..(size as usize)).collect::<Vec<u8>>().to_utf8()?;
                 println!("TCMP str : {}", string);
                 let is_compilation = string.parse().ok()?;
                 Some(
@@ -568,7 +568,8 @@ impl FrameValue {
                 println!("encode : {:?}", encode);
                 if id == ID3FRAMEID::TXXX {
                     let buffer_i : Vec<u8> = buffer.drain(0..((size-1) as usize)).collect();
-                    let strings = if encode.is_one_byte() {split_to_string_utf8(&buffer_i) } else {split_to_string_utf16(&to_u16_le(&buffer_i))};
+                    //let strings = if encode.is_one_byte() {split_to_string_utf8(&buffer_i) } else {split_to_string_utf16(&to_u16_le(&buffer_i))};
+                    let strings = buffer_i.split_to_string(&encode);
                     let description = strings.first()?.clone();
                     let text = strings.get(1)?.clone();
                     println!("Description :=> {}\nText :=> {}", description, text);
@@ -576,7 +577,8 @@ impl FrameValue {
                     //Some(Self::Undefined(buffer))
                 }else {
                     let string_buff = buffer.drain(0..((size-1) as usize)).collect::<Vec<u8>>();
-                    let text = vec_to_string(string_buff, &encode)?;
+                    //let text = vec_to_string(string_buff, &encode)?;
+                    let text = string_buff.into_string(&encode)?;
                     println!("Text Value :=> {}", &text);
                     let text_frame = TextFrame { text_encoding : encode, text};
                     Some( Self::TF( text_frame) )
@@ -594,7 +596,8 @@ impl FrameValue {
                 println!("encode : {:?}", encode);
                 let language = String::from_utf8(buffer.drain(0..3).collect::<Vec<u8>>()).ok()?;
                 let buffer_i : Vec<u8> = buffer.drain(0..((size-4) as usize)).collect();
-                let strings = if encode.is_one_byte() {split_to_string_utf8(&buffer_i) } else {split_to_string_utf16(&to_u16_le(&buffer_i))};
+                //let strings = if encode.is_one_byte() {split_to_string_utf8(&buffer_i) } else {split_to_string_utf16(&to_u16_le(&buffer_i))};
+                let strings = buffer_i.split_to_string(&encode);
                 let (content_description, text ) = if strings.len() == 1 {
                     (strings.first()?.clone(), "".into())
                 }else {(strings.first()?.clone(), strings.get(1)?.clone() ) };
@@ -609,10 +612,12 @@ impl FrameValue {
                     None => TextEncoding::Iso8859_1,
                 };
                 println!("encode : {:?}", encode);
-                let mime_type = first_string(buffer, &encode, true)?;
+                //let mime_type = first_string(buffer, &encode, true)?;
+                let mime_type = buffer.first_matched_string(&encode, true)?;
                 let picture_type = PictureType::from_raw_value(buffer.remove(0))?;
                 println!("Mime Type : {}", mime_type);
-                let description = first_string(buffer, &encode, true)?;
+                //let description = first_string(buffer, &encode, true)?;
+                let description = buffer.first_matched_string(&encode, true)?;
                 println!("Description : {}", description);
                 let drop_len = size as usize - (start_len - buffer.len());
                 let picture_data = buffer.drain(0..drop_len).collect::<Vec<u8>>();                
@@ -626,7 +631,7 @@ impl FrameValue {
             },
             IPLS => {
                 let encode = TextEncoding::from_raw_value(buffer.remove(0)).unwrap_or(TextEncoding::Iso8859_1);
-                let people_list = first_string(buffer, &encode, true)?;
+                let people_list = buffer.first_matched_string(&encode, true)?;
                 Some( Self::IPF(
                         InvolvedPeopleFrame {
                             text_encoding: encode,
@@ -636,7 +641,8 @@ impl FrameValue {
             }
             UFID => {
                 let start_len = buffer.len();
-                let owner_id = first_string(buffer, &TextEncoding::UnicodeUtf8, true)?;
+                //let owner_id = first_string(buffer, &TextEncoding::UnicodeUtf8, true)?;
+                let owner_id = buffer.first_matched_string(&TextEncoding::Iso8859_1, true)?;
                 let drain_size  = size as usize - (start_len - buffer.len()); 
                 let id = buffer.drain(0..drain_size).collect();
                 Some(Self::UFIF(UniqueFileIdentifierFrame{
@@ -684,7 +690,8 @@ impl FrameValue {
                 println!("encode : {:?}", encode);
                 let language = String::from_utf8(buffer.drain(0..3).collect::<Vec<u8>>()).ok()?;
                 let buffer_i : Vec<u8> = buffer.drain(0..((size-4) as usize)).collect();
-                let strings = if encode.is_one_byte() {split_to_string_utf8(&buffer_i) } else {split_to_string_utf16(&to_u16_le(&buffer_i))};
+                //let strings = if encode.is_one_byte() {split_to_string_utf8(&buffer_i) } else {split_to_string_utf16(&to_u16_le(&buffer_i))};
+                let strings = buffer_i.split_to_string(&encode);
                 let (content_description, text ) = if strings.len() == 1 {
                     (strings.first()?.clone(), "".into())
                 }else {(strings.first()?.clone(), strings.get(1)?.clone() ) };
@@ -714,8 +721,8 @@ impl FrameValue {
             GEOB => {
                 let start_size = buffer.len();
                 let encode = TextEncoding::from_raw_value(buffer.remove(0)).unwrap_or(TextEncoding::Iso8859_1);
-                let mime_type = first_string(buffer, &encode, true)?;
-                let filename = first_string(buffer, &encode, true)?;
+                let mime_type = buffer.first_matched_string(&encode, true)?;
+                let filename =  buffer.first_matched_string(&encode, true)?;
                 let content = if encode.is_one_byte() {
                     buffer.drain(0..1).collect()
                 }else {
@@ -755,7 +762,8 @@ impl FrameValue {
             }
             AENC => {
                 let start_size = buffer.len();
-                let owner_id = first_string(buffer, &TextEncoding::UnicodeUtf8, true)?;
+                //let owner_id = first_string(buffer, &TextEncoding::UnicodeUtf8, true)?;
+                let owner_id = buffer.first_matched_string(&TextEncoding::Iso8859_1, true)?;
                 let preview_start  = buffer.drain(0..2).collect::<Vec<u8>>().to_u16_be()?;
                 let preview_lenght  = buffer.drain(0..2).collect::<Vec<u8>>().to_u16_be()?;
                 let end_size = start_size - buffer.len();
@@ -782,8 +790,9 @@ impl FrameValue {
             USER => {
                 let encode = TextEncoding::from_raw_value(buffer.remove(0)).unwrap_or(TextEncoding::Iso8859_1);
                 let language = String::from_utf8(buffer.drain(0..3).collect()).ok()?;
-                let text = vec_to_string(buffer.drain(0..(size as usize - 4)).collect()
-                , &encode)?;
+                //let text = vec_to_string(buffer.drain(0..(size as usize - 4)).collect()
+                //, &encode)?;
+                let text = buffer.drain(0..(size as usize - 4)).collect::<Vec<u8>>().into_string(&encode)?;
                 Some(Self::TUF(TermsUseFrame {
                     text_encoding: encode,
                     language,
@@ -817,7 +826,8 @@ impl FrameValue {
             }
             PRIV => {
                 let start_len = buffer.len();
-                let owner_id = first_string(buffer, &TextEncoding::UnicodeUtf8, true)?;
+                //let owner_id = first_string(buffer, &TextEncoding::UnicodeUtf8, true)?;
+                let owner_id = buffer.first_matched_string(&TextEncoding::Iso8859_1, true)?;
                 let end_len = start_len - buffer.len();
                 let private_data = buffer.drain(0..(size as usize - end_len)).collect();
                 Some(Self::PrivF(PrivateFrame {

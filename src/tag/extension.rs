@@ -1,6 +1,6 @@
 use crate::util::function::LSBYTE_MASK;
 
-use super::{traits::{SliceConvert, StringConvert, SplitUF8, SplitUF16, ToBytes}, reading_mode::{TextEncoding, NULL_TERMINATE}};
+use super::{traits::{SliceConvert, StringConvert, SplitUF8, SplitUF16, ToBytes, SplitString}, reading_mode::{TextEncoding, NULL_TERMINATE}};
 
 
 impl ToBytes for String {
@@ -86,6 +86,16 @@ impl SplitUF16 for Vec<u16> {
     }
 }
 
+impl SplitString for Vec<u8> {
+    fn split_to_string(&self, encoding: &TextEncoding) -> Vec<String> {
+        match encoding {
+            TextEncoding::Iso8859_1 | TextEncoding::UnicodeUtf8 => self.split_to_string_utf8(),
+            TextEncoding::UnicodeUtf16 => self.to_u16_le().split_to_string_utf16(),
+            TextEncoding::UnicodeBigEndian => self.to_u16_be().split_to_string_utf16(),
+        }
+    }
+}
+
 impl StringConvert for Vec<u8> {
 
     fn into_string(&self, encoding : &super::reading_mode::TextEncoding) -> Option<String> {
@@ -138,6 +148,6 @@ impl StringConvert for Vec<u8> {
         if drain {
             self.drain(0..string_vec.len());
         }
-        self.into_string(encoding)
+        string_vec.into_string(encoding)
     }
 }

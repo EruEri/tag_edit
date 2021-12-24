@@ -26,12 +26,16 @@ pub (crate) trait StringConvert {
     fn to_utf8(&self) -> Option<String>;
     fn to_uft16_le(&self) -> Option<String>;
     fn to_utf16_be(&self) -> Option<String>;
-    fn first_matched_string(&mut self, encoding: &TextEncoding, dain : bool) -> Option<String>;
+    fn first_matched_string(&mut self, encoding: &TextEncoding, drain : bool) -> Option<String>;
 }
 
 pub(crate) trait SliceConvert {
     fn to_u16_le(&self) -> Vec<u16>;
     fn to_u16_be(&self) -> Vec<u16>;
+}
+
+pub(crate) trait SplitString {
+    fn split_to_string(&self, encoding: &TextEncoding) -> Vec<String>;
 }
 
 pub (crate) trait SplitUF8 {
