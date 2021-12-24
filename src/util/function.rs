@@ -158,6 +158,9 @@ pub(crate) trait ToBytes{
 
 impl ToBytes for String {
     fn to_bytes(&self, encoding : &TextEncoding, null_terminated : bool) -> Vec<u8> {
+        if self == "\u{0}\u{0}" || self == "\u{0}" {
+            return self.clone().into_bytes();
+        }
         let mut result = vec![];
         match encoding {
             TextEncoding::Iso8859_1 | TextEncoding::UnicodeUtf8 => {
