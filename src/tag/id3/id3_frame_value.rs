@@ -238,6 +238,8 @@ impl RawSize for CommentFrame{
         bytes.append(&mut self.language.clone().into_bytes());
         bytes.append(&mut self.content_description.to_bytes(&self.text_encoding, true));
         bytes.append(&mut self.text.to_bytes(&self.text_encoding, false));
+        bytes.push(NULL_TERMINATE);
+        bytes.push(NULL_TERMINATE);
         bytes
     }
 }
