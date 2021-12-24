@@ -1,3 +1,5 @@
+use super::reading_mode::TextEncoding;
+
 pub(crate) trait TagSize {
     fn size(&self) -> u32;
 }
@@ -13,4 +15,29 @@ pub(crate) trait RawSize {
     fn raw_size(&self) -> usize;
 
     fn raw_bytes(&self) -> Vec<u8>;
+}
+
+pub(crate) trait ToBytes{
+    fn to_bytes(&self, text_encoding : &TextEncoding, null_terminated : bool) -> Vec<u8>;
+}
+
+pub (crate) trait StringConvert {
+    fn into_string(&self, encoding : &TextEncoding) -> Option<String>;
+    fn to_utf8(&self) -> Option<String>;
+    fn to_uft16_le(&self) -> Option<String>;
+    fn to_utf16_be(&self) -> Option<String>;
+    fn first_matched_string(&mut self, encoding: &TextEncoding, dain : bool) -> Option<String>;
+}
+
+pub(crate) trait SliceConvert {
+    fn to_u16_le(&self) -> Vec<u16>;
+    fn to_u16_be(&self) -> Vec<u16>;
+}
+
+pub (crate) trait SplitUF8 {
+    fn split_to_string_utf8(&self) -> Vec<String>;
+}
+
+pub (crate) trait SplitUF16 {
+    fn split_to_string_utf16(&self) -> Vec<String>;
 }

@@ -1,4 +1,4 @@
-use crate::{tag::traits::RawSize, util::{function::{ToU16, ToU32, first_string, split_to_string_utf16, split_to_string_utf8, to_u16_le, vec_to_string, ToBytes}, reading_mode::{TextEncoding, NULL_TERMINATE}}};
+use crate::{tag::{traits::{RawSize, ToBytes}, reading_mode::{TextEncoding, NULL_TERMINATE}}, util::function::{ToU16, ToU32, first_string, split_to_string_utf16, split_to_string_utf8, to_u16_le, vec_to_string}};
 
 use super::{code::{event_timing_code::time_stamp_format::TimeStampFormat, picture_code::picture_type:: PictureType}, id3_frameid::ID3FRAMEID};
 use super::id3_frameid::ID3FRAMEID::*;

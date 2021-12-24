@@ -1,9 +1,11 @@
 use std::iter::FromIterator;
 
-use super::reading_mode::{TextEncoding, NULL_TERMINATE};
+use crate::tag::reading_mode::TextEncoding;
 
 
-const LSBYTE_MASK : u16 = 0x00FF;
+
+
+pub (crate) const LSBYTE_MASK : u16 = 0x00FF;
 
 pub (crate) fn unsynchsafe(input : u32) -> u32 {
     let mut out : u32 = 0;
@@ -152,52 +154,9 @@ pub (crate) fn split_to_string_utf16(buffer : &Vec<u16>) -> Vec<String> {
     splits.into_iter().filter(|s|  !s.is_empty()).map(|s| String::from_utf16_lossy(s.into())).collect()
 }
 
-pub(crate) trait ToBytes{
-    fn to_bytes(&self, text_encoding : &TextEncoding, null_terminated : bool) -> Vec<u8>;
-}
 
-impl ToBytes for String {
-    fn to_bytes(&self, encoding : &TextEncoding, null_terminated : bool) -> Vec<u8> {
-        if self == "\u{0}\u{0}" || self == "\u{0}" {
-            return self.clone().into_bytes();
-        }
-        
-        let mut result = vec![];
-        match encoding {
-            TextEncoding::Iso8859_1 | TextEncoding::UnicodeUtf8 => {
-                result = self.clone().into_bytes();
-            },
-            TextEncoding::UnicodeUtf16 => {
-                let vec : Vec<u16> = self.clone().encode_utf16().collect();
-                for short in vec.iter() {
-                    let msbyte = (*short >> 8) as u8;
-                    let lsbyte = (short & LSBYTE_MASK) as u8;
-                    result.push(lsbyte);
-                    result.push(msbyte);
-                }
-            },
-            TextEncoding::UnicodeBigEndian => {
-                let vec : Vec<u16> = self.clone().encode_utf16().collect();
-                for short in vec.iter() {
-                    let msbyte = ((*short) >> 8) as u8;
-                    let lsbyte = (short & LSBYTE_MASK) as u8;
-                    result.push(msbyte);
-                    result.push(lsbyte); 
-                }
-            }
-        }
-        if null_terminated {
-            if encoding.is_one_byte() && !self.ends_with("\u{0}"){
-                result.push(NULL_TERMINATE);
-            }else if !encoding.is_one_byte() && !self.ends_with("\u{0}\u{0}"){
-                result.push(NULL_TERMINATE);
-                result.push(NULL_TERMINATE);
-            }
-        }
-        result
-    }
-    
-}
+
+
 
 pub trait ToU32 {
     fn to_u32_be(&self) -> Option<u32>;
