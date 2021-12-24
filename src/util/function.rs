@@ -161,6 +161,7 @@ impl ToBytes for String {
         if self == "\u{0}\u{0}" || self == "\u{0}" {
             return self.clone().into_bytes();
         }
+        
         let mut result = vec![];
         match encoding {
             TextEncoding::Iso8859_1 | TextEncoding::UnicodeUtf8 => {
@@ -186,8 +187,10 @@ impl ToBytes for String {
             }
         }
         if null_terminated {
-            result.push(NULL_TERMINATE);
-            if !encoding.is_one_byte() {
+            if encoding.is_one_byte() && !self.ends_with("\u{0}"){
+                result.push(NULL_TERMINATE);
+            }else if !encoding.is_one_byte() && !self.ends_with("\u{0}\u{0}"){
+                result.push(NULL_TERMINATE);
                 result.push(NULL_TERMINATE);
             }
         }
