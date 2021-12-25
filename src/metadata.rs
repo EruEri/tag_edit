@@ -303,7 +303,7 @@ impl Metadata {
         self.tag.music_len()
     }
     pub fn remove_music_len(&mut self){
-        self.remove_music_len()
+        self.tag.remove_music_len()
     }
     pub fn year(&self) -> Option<i16> {
         self.tag.year()
