@@ -114,10 +114,25 @@ impl ID3TAG {
         }
         size
     }
-    // pub (crate) fn update_padding_size(&mut self) {
-    //     let dif : u32 = self.size - self.frame_total_size();
-    //     self.padding += dif as i32
-    // }
+
+    pub (crate) fn get_text_from_text_frame(&self, frame_id : &ID3FRAMEID) -> Option<String>{
+        self
+        .frames
+        .iter()
+        .find_map(|id3_frame| {
+            match id3_frame.as_text_frame() {
+                None => None,
+                Some(tf) => if id3_frame.get_frame_id() == frame_id { Some(tf.get_text()) } else {None}
+            }
+        })
+    }
+    pub (crate) fn _get_text_frame_mut(&mut self, frame_id: &ID3FRAMEID) -> Option<&mut TextFrame> {
+        self
+        .frames
+        .iter_mut()
+        .find(|id3| id3.get_frame_id() == frame_id && frame_id.is_text_frame())?
+        .as_text_frame_mut()
+    }
 
     pub (crate) fn set_text_frame(&mut self, frame_id: ID3FRAMEID, text: String) {
         let major_version = self.major_version.clone();
@@ -133,14 +148,11 @@ impl ID3TAG {
         }
 
         self.recalcule_size();
-        // if let Some(frame) = self.get_text_frame_mut(&frame_id) {
-        //     frame.set_text(text,major_version );
-        // }else {
-        //     let value = TextFrame::new(major_version, text);
-        //     let frame = (frame_id, FrameValue::TF(value)).into();
-        //     self.frames.push(frame)
-        // }
-        // self.update_padding_size()
+    }
+
+    pub(crate) fn remove_text_frame(&mut self, frame_id: &ID3FRAMEID) {
+        self.frames
+        .retain(|frame| frame.get_frame_id() != frame_id)
     }
 
     pub (crate) fn get_unsynch_lyrics(&self)-> Option<Vec<String>> {
@@ -170,24 +182,7 @@ impl ID3TAG {
         )
     }
 
-    pub (crate) fn get_text_from_text_frame(&self, frame_id : &ID3FRAMEID) -> Option<String>{
-        self
-        .frames
-        .iter()
-        .find_map(|id3_frame| {
-            match id3_frame.as_text_frame() {
-                None => None,
-                Some(tf) => if id3_frame.get_frame_id() == frame_id { Some(tf.get_text()) } else {None}
-            }
-        })
-    }
-    pub (crate) fn _get_text_frame_mut(&mut self, frame_id: &ID3FRAMEID) -> Option<&mut TextFrame> {
-        self
-        .frames
-        .iter_mut()
-        .find(|id3| id3.get_frame_id() == frame_id && frame_id.is_text_frame())?
-        .as_text_frame_mut()
-    }
+ 
     pub(crate) fn get_frame_mut(&mut self, frame_id : &ID3FRAMEID) -> Option<&mut ID3FRAME> {
         self
         .frames

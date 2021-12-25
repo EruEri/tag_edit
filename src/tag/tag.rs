@@ -21,8 +21,6 @@ impl Tag {
 
 impl Tag {
 
-    /// Retrieve all the pictures contained in the tag. An empty `Vec`
-    /// if the tag contains 0 picture
     pub fn attached_pictures(&self) -> Vec<&Vec<u8>> {
         match self {
             Self::ID3(t) => t.get_attached_picture()
@@ -38,6 +36,13 @@ impl Tag {
             Tag::ID3(tag) => tag.set_text_frame(TPE1, name),
         }
     }
+
+    pub fn remove_artist(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TPE1),
+        }
+    }
+    
     pub fn album_artist(&self) -> Option<String> {
         match self {
             Self::ID3(tag) => tag.get_text_from_text_frame(&TPE2)
@@ -46,6 +51,12 @@ impl Tag {
     pub(crate) fn set_album_artist(&mut self, artist: String) {
         match self {
             Self::ID3(tag ) => tag.set_text_frame(TPE2, artist)
+        }
+    }
+
+    pub fn remove_album_artist(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TPE2),
         }
     }
     
@@ -59,6 +70,13 @@ impl Tag {
             Tag::ID3(tag) => tag.set_text_frame(TALB, album),
         }
     }
+
+    pub fn remove_album(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TALB),
+        }
+    }
+    
     pub fn genre(&self) -> Option<String> {
         match self {
             Tag::ID3(tag) => tag.get_text_from_text_frame(&TCON)
@@ -67,6 +85,12 @@ impl Tag {
     pub(crate) fn set_genre(&mut self, genre: String) {
         match self {
             Tag::ID3(tag ) => tag.set_text_frame(TCON, genre)
+        }
+    }
+
+    pub fn remove_genre(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TCON),
         }
     }
     pub fn publisher(&self) -> Option<String> {
@@ -79,6 +103,11 @@ impl Tag {
             Tag::ID3(tag) => tag.set_text_frame(TPUB, publisher),
         }
     }
+    pub fn remove_publisher(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TPUB),
+        }
+    }
     pub fn bpm(&self) -> Option<String> {
         match self {
             Self::ID3(tag) => tag.get_text_from_text_frame(&TBPM)
@@ -89,14 +118,25 @@ impl Tag {
             Self::ID3(tag) => tag.set_text_frame(TBPM, bpm.to_string())
         }
     }
+
+    pub fn remove_bpm(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TBPM),
+        }
+    }
     pub fn composers(&self) -> Option<String> {
         match self {
             Tag::ID3(tag) => tag.get_text_from_text_frame(&TCOM),
         }
     }
-    pub fn set_composers(&mut self, composers : String){
+    pub fn set_composers(&mut self, composers : &Vec<String>){
         match self {
-            Tag::ID3(tag) => tag.set_text_frame(TCOM, composers)
+            Tag::ID3(tag) => tag.set_text_frame(TCOM, composers.join(","))
+        }
+    }
+    pub fn remove_composers(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TCOM),
         }
     }
     pub fn copyright(&self) -> Option<String> {
@@ -109,6 +149,12 @@ impl Tag {
             Tag::ID3(tag) => tag.get_text_from_text_frame(&TDAT),
         }
     }
+
+    pub fn remove_date(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TDAT),
+        }
+    }
     pub fn encoded_by(&self) -> Option<String> {
         match self {
             Tag::ID3(tag) => tag.get_text_from_text_frame(&TENC),
@@ -117,6 +163,11 @@ impl Tag {
     pub fn set_encoder(&mut self, encoder : String) {
         match self {
             Tag::ID3(tag) => tag.set_text_frame(TENC, encoder),
+        }
+    }
+    pub fn remove_encoder(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TENC),
         }
     }
     pub fn file_type(&self) -> Option<String> {
@@ -129,6 +180,11 @@ impl Tag {
             Tag::ID3(tag) => tag.get_text_from_text_frame(&TIME)
         }
     }
+    pub fn remove_time(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TIME),
+        }
+    }
     pub fn title(&self) -> Option<String> {
         match self {
             Tag::ID3(tag) => tag.get_text_from_text_frame(&TIT2),
@@ -139,10 +195,20 @@ impl Tag {
             Tag::ID3(tag) => tag.set_text_frame(TIT2, title),
         }
     }
+    pub fn remove_title(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TIT2),
+        }
+    }
     pub fn music_len(&self) -> Option<usize>{
         match self {
             Tag::ID3(tag) => tag.get_text_from_text_frame(&TLEN)?.parse().ok()
             
+        }
+    }
+    pub fn remove_music_len(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TLEN),
         }
     }
     pub fn year(&self) -> Option<i16>{
@@ -155,7 +221,12 @@ impl Tag {
         match self {
             Tag::ID3(tag) => tag.set_text_frame(TYER, year.to_string())
         }
-    } 
+    }
+    pub fn remove_year(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TYER),
+        }
+    }
     pub fn track_position(&self) -> Option<String> {
         match self {
             Tag::ID3(tag ) => tag.get_text_from_text_frame(&TRCK)
@@ -172,6 +243,11 @@ impl Tag {
             }
         }
     }
+    pub fn remove_track_position(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TRCK),
+        }
+    }
     pub fn album_part(&self) -> Option<String> {
         match self {
             Self::ID3(tag) => tag.get_text_from_text_frame(&TPOS)
@@ -184,8 +260,13 @@ impl Tag {
                     Some(n) => format!("{}/{}", album_part, n),
                     None =>  album_part.to_string()
                 };
-                tag.set_text_frame(TRCK, text)
+                tag.set_text_frame(TPOS, text)
             },
+        }
+    }
+    pub fn remove_album_part(&mut self) {
+        match self {
+            Tag::ID3(tag) => tag.remove_text_frame(&TPOS),
         }
     }
     pub fn lyrics(&self) -> Option<Vec<String>> {

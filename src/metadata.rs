@@ -51,7 +51,7 @@ fn read_type_audio_file(file: &mut File) -> Result<(AudioType, usize), FromUtf8E
 
 impl Metadata {
 
-    /// Retrieve the tag metadata from a file
+    /// Retrieves the tag metadata from a file
     pub fn new(file_path: &str) -> Option<Self>{
         let mut file = OpenOptions::new().create(false).read(true).write(true).open(file_path).ok()?;
         let (audio_type, size) = read_type_audio_file(&mut file).ok()?;
@@ -89,6 +89,8 @@ impl Metadata {
         &self.tag
     }
 
+    /// Retrieves all the pictures contained in the tag. An empty `Vec`
+    /// if the tag doesn'n contain any picture
     pub fn attached_pictures(&self) -> Vec<&Vec<u8>> {
         self.tag.attached_pictures()
     }
@@ -98,52 +100,177 @@ impl Metadata {
     /// ```
     /// use tag_editor::metadata::Metadata;
     /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// assert_eq!(metadata.artist(), Some("Maon Kurosaki".to_string()));
     /// 
     /// ```
     pub fn artist(&self) -> Option<String>{
         self.tag.artist()
     }
     /// Set the song artist (TPE1)
+    /// 
+    /// # Examples
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.set_artist("Song performer".into());
+    /// assert_eq!(metadata.artist(), Some("Song performer".to_string()));
+    /// 
+    /// ```
     pub fn set_artist(&mut self, name : String) {
         self.tag.set_artist(name)
     } 
+
+    pub fn remove_artist(&mut self) {
+        self.tag.remove_artist()
+    }
     /// Returns the album's artist (TPE2)
+    /// 
+    /// # Examples
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// assert_eq!(metadata.album_artist().unwrap(), "\u{feff}黒崎真音\u{0}".to_string());
+    /// 
+    /// ```
     pub fn album_artist(&self) -> Option<String> {
         self.tag.album_artist()
     }
     /// Set the album's artist (TPE2)
+    /// 
+    /// # Examples
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.set_artist("Artist album".to_string());
+    /// assert_eq!(metadata.artist().unwrap(), "Artist album".to_string());
+    /// 
+    /// ```
     pub fn set_album_artist(&mut self, artist : String) {
         self.tag.set_album_artist(artist)
     }
+
+    pub fn remove_album_artist(&mut self){
+        self.tag.remove_artist()
+    }
+    /// Returns the album name (TABL)
+    /// 
+    /// # Example 
+    /// ``` 
+    /// use tag_editor::metadata::Metadata;
+    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// assert_eq!(metadata.album().unwrap(), "Butterfly Effect".to_string())
+    /// ```
     pub fn album(&self) -> Option<String>{
         self.tag.album()
     }
+    /// Set the album name (TALB)
+    /// 
+    /// # Examples 
+    /// ``` 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.set_album("An album Name".into());
+    /// assert_eq!(metadata.album().unwrap(), "An album Name".to_string());
+    /// ```
     pub fn set_album(&mut self, album: String) {
         self.tag.set_album(album)
     }
+
+    pub fn remove_album(&mut self){
+        self.tag.remove_album()
+    }
+
+    /// Returns the genre (TCON)
+    /// # Examples 
+    /// ``` 
+    /// use tag_editor::metadata::Metadata;
+    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// assert_eq!(metadata.genre().unwrap(), "J-Pop".to_string());
+    /// ```
     pub fn genre(&self) -> Option<String> {
         self.tag.genre()
     }
+    /// Returns the genre (TCON)
+    /// 
+    /// # Examples 
+    /// ``` 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.set_genre("A Genre".into());
+    /// assert_eq!(metadata.genre().unwrap(), "A Genre".to_string());
+    /// ```
     pub fn set_genre(&mut self, genre: String) {
         self.tag.set_genre(genre)
     }
+
+    pub fn remove_genre(&mut self){
+        self.tag.remove_genre()
+    }
+    /// Returns the publisher (TPUB)
+    /// 
+    /// # Examples 
+    /// ``` 
+    /// use tag_editor::metadata::Metadata;
+    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let publisher = metadata.publisher();
+    /// assert!(publisher.is_none());
+    /// ```
     pub fn publisher(&self) -> Option<String> {
         self.tag.publisher()
     }
+    /// Set the publisher (TPUB)
+    /// 
+    /// # Examples 
+    /// ``` 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.set_publisher("Some Publisher".into());
+    /// assert!(metadata.publisher().is_some());
+    /// ```
     pub fn set_publisher(&mut self, publisher : String) {
         self.tag.set_publisher(publisher)
     }
+
+    pub fn remove_publisher(&mut self){
+        self.tag.remove_publisher()
+    }
+    /// Returns the beats per minutes of the song (TBPM)
+    /// 
+    /// # Examples 
+    /// ``` 
+    /// use tag_editor::metadata::Metadata;
+    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let bpm = metadata.bpm();
+    /// assert!(bpm.is_none())
+    /// ```
     pub fn bpm(&self) -> Option<String> {
         self.tag.bpm()
     }
+    /// Returns the beats per minutes of the song (TBPM)
+    /// 
+    /// # Examples 
+    /// ``` 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.set_bpm(100);
+    /// assert_eq!(metadata.bpm().unwrap().parse::<u16>().unwrap(), 100)
+    /// ```
     pub fn set_bpm(&mut self, bpm : u16){
         self.tag.set_bpm(bpm)
     }
+
+    pub fn remove_bpm(&mut self){
+        self.tag.remove_bpm()
+    }
+    /// Returns the copyright message (TCOP)
     pub fn copyright(&self) -> Option<String> {
         self.tag.copyright()
     }
     pub fn date(&self) -> Option<String> {
         self.tag.date()
+    }
+    pub fn remove_date(&mut self){
+        self.tag.remove_date()
     }
     pub fn encoded_by(&self) -> Option<String> {
         self.tag.encoded_by()
@@ -151,11 +278,17 @@ impl Metadata {
     pub fn set_encoder(&mut self, encoder : String){
         self.tag.set_encoder(encoder)
     }
+    pub fn remove_encoder(&mut self){
+        self.tag.remove_encoder()
+    }
     pub fn file_type(&self) -> Option<String> {
         self.tag.file_type()   
     }
     pub fn time(&self) -> Option<String> {
         self.tag.time()
+    }
+    pub fn remove_time(&mut self){
+        self.tag.remove_time()
     }
     pub fn title(&self) -> Option<String> {
         self.tag.title()
@@ -163,8 +296,14 @@ impl Metadata {
     pub fn set_title(&mut self, title : String){
         self.tag.set_title(title)
     }
+    pub fn remove_title(&mut self){
+        self.tag.remove_title()
+    }
     pub fn music_len(&self) -> Option<usize> {
         self.tag.music_len()
+    }
+    pub fn remove_music_len(&mut self){
+        self.remove_music_len()
     }
     pub fn year(&self) -> Option<i16> {
         self.tag.year()
@@ -172,17 +311,26 @@ impl Metadata {
     pub fn set_year(&mut self, year: i16){
         self.tag.set_year(year)
     }
+    pub fn remove_year(&mut self){
+        self.tag.remove_year()
+    }
     pub fn track_position(&self) -> Option<String> {
      self.tag.track_position()
     }
     pub fn set_track_position(&mut self, track_pos: u16, out_of: Option<u16>){
         self.tag.set_track_position(track_pos, out_of)
     }
+    pub fn remove_track_position(&mut self){
+        self.tag.remove_track_position()
+    }
     pub fn album_part(&self) -> Option<String> {
         self.tag.album_part()
     }
     pub fn set_album_part(&mut self, album_part : u16, out_of: Option<u16> ){
         self.tag.set_album_part(album_part, out_of)
+    }
+    pub fn remove_album_part(&mut self){
+        self.tag.remove_album_part()
     }
     pub fn lyrics(&self) -> Option<Vec<String>> {
         self.tag.lyrics()

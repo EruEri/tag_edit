@@ -83,8 +83,8 @@ impl RawSize for UserInfoFrame {
         bytes.push(self.text_encoding as u8);
         bytes.append(&mut self.description.to_bytes(&self.text_encoding, true));
         bytes.append(&mut self.text.to_bytes(&self.text_encoding, false));
-        bytes.push(NULL_TERMINATE);
-        bytes.push(NULL_TERMINATE);
+        // bytes.push(NULL_TERMINATE);
+        // bytes.push(NULL_TERMINATE);
         bytes
     }
     
