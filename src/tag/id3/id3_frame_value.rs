@@ -1,4 +1,4 @@
-use crate::{tag::{traits::{RawSize, ToBytes, StringConvert, SplitString}, reading_mode::{TextEncoding, NULL_TERMINATE}}, util::function::{ToU16, ToU32, first_string, split_to_string_utf16, split_to_string_utf8, to_u16_le, vec_to_string}};
+use crate::{tag::{traits::{RawSize, ToBytes, StringConvert, SplitString}, reading_mode::{TextEncoding, NULL_TERMINATE}}, util::function::{ToU16, ToU32}};
 
 use super::{code::{event_timing_code::time_stamp_format::TimeStampFormat, picture_code::picture_type:: PictureType}, id3_frameid::ID3FRAMEID};
 use super::id3_frameid::ID3FRAMEID::*;
@@ -240,8 +240,8 @@ impl RawSize for CommentFrame{
         bytes.append(&mut self.language.clone().into_bytes());
         bytes.append(&mut self.content_description.to_bytes(&self.text_encoding, true));
         bytes.append(&mut self.text.to_bytes(&self.text_encoding, false));
-        bytes.push(NULL_TERMINATE);
-        bytes.push(NULL_TERMINATE);
+        //bytes.push(NULL_TERMINATE);
+        // bytes.push(NULL_TERMINATE);
         bytes
     }
 }
@@ -554,7 +554,7 @@ impl FrameValue {
         match frame_id {
             TCMP => {
                 let string = buffer.drain(0..(size as usize)).collect::<Vec<u8>>().to_utf8()?;
-                println!("TCMP str : {}", string);
+                ////println!("TCMP str : {}", string);
                 let is_compilation = string.parse().ok()?;
                 Some(
                     Self::ICFF(is_compilation)
@@ -565,27 +565,30 @@ impl FrameValue {
                     Some(e) => e,
                     None => TextEncoding::Iso8859_1,
                 };
-                println!("encode : {:?}", encode);
+                // println!("encode : {:?}", encode);
                 if id == ID3FRAMEID::TXXX {
                     let buffer_i : Vec<u8> = buffer.drain(0..((size-1) as usize)).collect();
                     //let strings = if encode.is_one_byte() {split_to_string_utf8(&buffer_i) } else {split_to_string_utf16(&to_u16_le(&buffer_i))};
                     let strings = buffer_i.split_to_string(&encode);
-                    let description = strings.first()?.clone();
-                    let text = strings.get(1)?.clone();
-                    println!("Description :=> {}\nText :=> {}", description, text);
+                    let (description, text ) = if strings.len() == 1 {
+                        ("".into(), strings.first()?.clone())
+                    }else {(strings.first()?.clone(), strings.get(1)?.clone() ) };
+                    // println!("Description :=> {}\nText :=> {}", description, text);
                     Some( Self::UIF( UserInfoFrame { text_encoding: encode, description, text}))
                     //Some(Self::Undefined(buffer))
                 }else {
                     let string_buff = buffer.drain(0..((size-1) as usize)).collect::<Vec<u8>>();
-                    //let text = vec_to_string(string_buff, &encode)?;
+                    // let text = vec_to_string(string_buff, &encode)?;
                     let text = string_buff.into_string(&encode)?;
-                    println!("Text Value :=> {}", &text);
+                    // println!("Text Value :=> {}", &text);
                     let text_frame = TextFrame { text_encoding : encode, text};
                     Some( Self::TF( text_frame) )
                 }
             }
             WCOM | WCOP | WOAF | WOAR | WOAS | WORS | WPAY | WPUB => {
-                let url =  String::from_utf8(buffer.drain(0..((size-1) as usize)).collect()).ok()?;
+                let url =  String::from_utf8(buffer.drain(0..((size) as usize)).collect()).ok()?;
+                //println!("buffer remain : {}", buffer.len());
+                // println!("url : {}", &url);
                 Some( Self::UF( UrlFrame { url } ))  
             },
             COMM => {
@@ -593,15 +596,15 @@ impl FrameValue {
                     Some(e) => e,
                     None => TextEncoding::Iso8859_1,
                 };
-                println!("encode : {:?}", encode);
+                // println!("encode : {:?}", encode);
                 let language = String::from_utf8(buffer.drain(0..3).collect::<Vec<u8>>()).ok()?;
                 let buffer_i : Vec<u8> = buffer.drain(0..((size-4) as usize)).collect();
                 //let strings = if encode.is_one_byte() {split_to_string_utf8(&buffer_i) } else {split_to_string_utf16(&to_u16_le(&buffer_i))};
                 let strings = buffer_i.split_to_string(&encode);
                 let (content_description, text ) = if strings.len() == 1 {
-                    (strings.first()?.clone(), "".into())
+                    ("".into(), strings.first()?.clone())
                 }else {(strings.first()?.clone(), strings.get(1)?.clone() ) };
-                println!("Description :=> {}\nText :=> {}", content_description, text);
+                // println!("Description :=> {}\nText :=> {}", content_description, text);
                 Some(Self::CF(CommentFrame { text_encoding: encode, language, content_description, text }))
 
             },
@@ -611,14 +614,14 @@ impl FrameValue {
                     Some(e) => e,
                     None => TextEncoding::Iso8859_1,
                 };
-                println!("encode : {:?}", encode);
+                // println!("encode : {:?}", encode);
                 //let mime_type = first_string(buffer, &encode, true)?;
                 let mime_type = buffer.first_matched_string(&encode, true)?;
                 let picture_type = PictureType::from_raw_value(buffer.remove(0))?;
-                println!("Mime Type : {}", mime_type);
+                // println!("Mime Type : {}", mime_type);
                 //let description = first_string(buffer, &encode, true)?;
                 let description = buffer.first_matched_string(&encode, true)?;
-                println!("Description : {}", description);
+                // println!("Description : {}", description);
                 let drop_len = size as usize - (start_len - buffer.len());
                 let picture_data = buffer.drain(0..drop_len).collect::<Vec<u8>>();                
                 Some(Self::APF(AttachedPictureFrame {
@@ -687,7 +690,7 @@ impl FrameValue {
             }
             USLT => {
                 let encode = TextEncoding::from_raw_value(buffer.remove(0)).unwrap_or(TextEncoding::Iso8859_1);
-                println!("encode : {:?}", encode);
+                //println!("encode : {:?}", encode);
                 let language = String::from_utf8(buffer.drain(0..3).collect::<Vec<u8>>()).ok()?;
                 let buffer_i : Vec<u8> = buffer.drain(0..((size-4) as usize)).collect();
                 //let strings = if encode.is_one_byte() {split_to_string_utf8(&buffer_i) } else {split_to_string_utf16(&to_u16_le(&buffer_i))};
@@ -695,7 +698,7 @@ impl FrameValue {
                 let (content_description, text ) = if strings.len() == 1 {
                     (strings.first()?.clone(), "".into())
                 }else {(strings.first()?.clone(), strings.get(1)?.clone() ) };
-                println!("Description :=> {}\nText :=> {}", content_description, text);
+                //println!("Description :=> {}\nText :=> {}", content_description, text);
                 Some(Self::ULF(UnsyncLyricsFrame 
                     { text_encoding: encode, language, content_description, text }
                 ))

@@ -21,6 +21,8 @@ impl Tag {
 
 impl Tag {
 
+    /// Retrieve all the pictures contained in the tag. An empty `Vec`
+    /// if the tag contains 0 picture
     pub fn attached_pictures(&self) -> Vec<&Vec<u8>> {
         match self {
             Self::ID3(t) => t.get_attached_picture()

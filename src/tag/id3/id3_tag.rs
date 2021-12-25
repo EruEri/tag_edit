@@ -22,6 +22,9 @@ impl ID3TAG {
         if buffer.len() <= 10 { return Err(());}
         let id = String::from_utf8(buffer.drain(0..3).collect()).unwrap() ;
         let major_version = buffer.remove(0);
+        if major_version != 3 {
+            return  Err(());
+        }
         let _minor_version = buffer.remove(0);
         let mut _flags_header = vec![];
         let mut frames = vec![];
@@ -36,14 +39,14 @@ impl ID3TAG {
         while buffer.len() > 10 {
             if let Some(frame) = ID3FRAME::new(buffer){
                 frames.push(frame);
-                println!()
+                //println!()
             }else {
-                println!("No ID3FRAME");
-                println!("Padding size : {} ", &buffer.len());
+                //println!("No ID3FRAME");
+                //println!("Padding size : {} ", &buffer.len());
                 break;
             }
         }
-        Ok (Self {
+        let mut tag = Self {
             _identifier: id,
             major_version,
             _minor_version,
@@ -51,7 +54,9 @@ impl ID3TAG {
             _flags_header,
             frames,
             padding : (buffer.len() as i32 + 4)
-        })
+        };
+        tag.recalcule_all_size();
+        Ok (tag)
     }
 
     pub(crate) fn as_bytes(&self) -> Vec<u8> {
@@ -85,7 +90,16 @@ impl TagSize for ID3TAG {
 
 impl ID3TAG {
 
+    fn recalcule_all_size(&mut self){
+        self
+        .frames
+        .iter_mut()
+        .for_each(|frame| frame.recalcule_size());
+        self.recalcule_size()
+    }
+
     pub fn recalcule_size(&mut self){
+        //self.size = self.frame_total_size() + (self.padding as u32)
         self.size = self.total_size()
     }
 
@@ -194,23 +208,4 @@ impl ID3TAG {
             })
             .collect()
     }
-
-   
-
-
-    // pub fn get_attached_picture(&self) -> Option<Vec<&Vec<u8>>> {
-    //     let pictures = self.frames.iter().filter(
-    //         |id3_frame| id3_frame.get_frame_id() == ID3FRAMEID::APIC
-    //           ).collect::<Vec<&ID3FRAME>>();
-    //     if pictures.is_empty() {
-    //         None
-    //     }else {
-            
-    //         Some(
-    //             pictures.into_iter()
-    //             .map(|frame| frame.as_attached_picture_frame().unwrap().get_picture_data())
-    //             .collect()
-    //         )
-    //     }
-    // }
 }

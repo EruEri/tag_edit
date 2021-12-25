@@ -1,3 +1,6 @@
+//! Library's entry point.
+//! Allow to read and write Tag metadata from MP3 and FLAC files
+
 use std::convert::TryInto;
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Error, Write};
@@ -9,8 +12,9 @@ use crate::tag::tag::Tag;
 use super::tag::id3::id3_header_flag::ID3HeaderFLAG;
 use super::util::function::unsynchsafe;
 
-
+/// Tag's wrapper making the abstraction of the Tag source file (MP3, FLAC)
 pub struct Metadata{
+    filename : String,
     _file_type : AudioType,
     tag : Tag,
     music_data : Vec<u8>
@@ -33,10 +37,10 @@ fn read_type_audio_file(file: &mut File) -> Result<(AudioType, usize), FromUtf8E
         let flag = buffer[5];
         let unsync_flag = ID3HeaderFLAG::Unsynchronisation as u8;
         let size = if (flag & unsync_flag) != unsync_flag {
-            println!("To unsynchsafe");
+            //println!("To unsynchsafe");
             unsynchsafe(u32::from_be_bytes(buffer[6..].try_into().unwrap()))
         }else {
-            println!("unsynchsafe");
+            //println!("unsynchsafe");
             u32::from_be_bytes(buffer[6..].try_into().unwrap())
         };
         return Ok( (MP3, size as usize)); 
@@ -46,6 +50,8 @@ fn read_type_audio_file(file: &mut File) -> Result<(AudioType, usize), FromUtf8E
 }
 
 impl Metadata {
+
+    /// Retrieve the tag metadata from a file
     pub fn new(file_path: &str) -> Option<Self>{
         let mut file = OpenOptions::new().create(false).read(true).write(true).open(file_path).ok()?;
         let (audio_type, size) = read_type_audio_file(&mut file).ok()?;
@@ -60,6 +66,7 @@ impl Metadata {
                 let _ = file.read_to_end(&mut music_data);
                 let tag = ID3TAG::new(&mut buffer).ok()?;
                 Some( Metadata {
+                    filename : file_path.to_string(),
                     _file_type: MP3,
                     tag : Tag::ID3(tag),
                     music_data
@@ -85,15 +92,26 @@ impl Metadata {
     pub fn attached_pictures(&self) -> Vec<&Vec<u8>> {
         self.tag.attached_pictures()
     }
+    /// Returns the song artist (TPE1)
+    /// 
+    /// # Examples
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// 
+    /// ```
     pub fn artist(&self) -> Option<String>{
         self.tag.artist()
     }
+    /// Set the song artist (TPE1)
     pub fn set_artist(&mut self, name : String) {
         self.tag.set_artist(name)
     } 
+    /// Returns the album's artist (TPE2)
     pub fn album_artist(&self) -> Option<String> {
         self.tag.album_artist()
     }
+    /// Set the album's artist (TPE2)
     pub fn set_album_artist(&mut self, artist : String) {
         self.tag.set_album_artist(artist)
     }

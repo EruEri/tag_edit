@@ -78,10 +78,14 @@ impl SplitUF8 for Vec<u8> {
 
 impl SplitUF16 for Vec<u16> {
     fn split_to_string_utf16(&self) -> Vec<String>{
-        let splits = self.split(|n| *n == 0);
+        let splits = 
+        self.split(|n| *n == 0);
         splits
         .into_iter()
-        .filter(|s|  !s.is_empty()).map(|s| String::from_utf16_lossy(s.into()))
+        .filter(|s|  { 
+        !s.is_empty()
+    })
+        .map(|s| String::from_utf16_lossy(s.into()))
         .collect()
     }
 }

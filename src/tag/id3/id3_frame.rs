@@ -38,7 +38,7 @@ impl ID3FRAME {
 
     
     pub(crate) fn new(buffer: &mut Vec<u8>) -> Option<Self>{
-        println!("buffer lenght : {}", buffer.len());
+        //println!("buffer lenght : {}", buffer.len());
         if buffer.len() <= 10 {
             return None;
         }
@@ -51,7 +51,7 @@ impl ID3FRAME {
         let flag1 = buffer.remove(0);
         let flag2 = buffer.remove(0);
         let frame_size = size + 10;
-        println!("{} ->  size : {} ", frame_id, frame_size);
+        // println!("{} ->  size : {} ", frame_id, frame_size);
         if (flag1 & (FileAlterPreservation as u8) ) == (FileAlterPreservation as u8) {
             _flag_byte_1.push(FileAlterPreservation)
         }
