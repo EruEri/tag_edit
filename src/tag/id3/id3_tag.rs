@@ -85,6 +85,10 @@ impl TagSize for ID3TAG {
 
 impl ID3TAG {
 
+    pub fn recalcule_size(&mut self){
+        self.size = self.total_size()
+    }
+
     pub fn total_size(&self) -> u32 {
         self.frame_total_size() + (self.padding as u32) + 10
     }
@@ -113,6 +117,8 @@ impl ID3TAG {
             let frame = (frame_id, FrameValue::TF(value)).into();
             self.frames.push(frame)
         }
+
+        self.recalcule_size();
         // if let Some(frame) = self.get_text_frame_mut(&frame_id) {
         //     frame.set_text(text,major_version );
         // }else {

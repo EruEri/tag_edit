@@ -1,6 +1,6 @@
 
 use crate::tag::id3::id3_tag::ID3TAG;
-use super::id3::id3_frameid::ID3FRAMEID::*;
+use super::{id3::id3_frameid::ID3FRAMEID::*, traits::TagSize};
 pub enum Tag {
     ID3(ID3TAG)
 }
@@ -9,6 +9,12 @@ impl Tag {
     pub(crate) fn as_bytes(&self) -> Vec<u8> {
         match self {
             Tag::ID3(tag) => tag.as_bytes(),
+        }
+    }
+
+    pub(crate) fn get_size(&self) -> u32 {
+        match self {
+            Self::ID3(tag) => tag.size()
         }
     }
 }
