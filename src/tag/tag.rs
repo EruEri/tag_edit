@@ -256,23 +256,23 @@ impl Tag {
             Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TRCK)),
         }
     }
-    pub fn album_part(&self) -> Option<String> {
+    pub fn disc(&self) -> Option<String> {
         match self {
             Self::ID3(tag) => tag.get_text_from_text_frame(&TEXTFRAME(TPOS))
         }
     }
-    pub fn set_album_part(&mut self, album_part: u16, out_of: Option<u16>) {
+    pub fn set_disc(&mut self, disc: u16, out_of: Option<u16>) {
         match self {
             Tag::ID3(tag) => {
                 let text = match out_of {
-                    Some(n) => format!("{}/{}", album_part, n),
-                    None =>  album_part.to_string()
+                    Some(n) => format!("{}/{}", disc, n),
+                    None =>  disc.to_string()
                 };
                 tag.set_text_frame(TEXTFRAME(TPOS), text)
             },
         }
     }
-    pub fn remove_album_part(&mut self) {
+    pub fn remove_disc(&mut self) {
         match self {
             Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TPOS)),
         }

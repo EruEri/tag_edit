@@ -50,7 +50,7 @@ fn read_type_audio_file(file: &mut File) -> Result<(AudioType, usize), FromUtf8E
 }
 
 impl Metadata {
-
+    
     /// Retrieves the tag metadata from a file
     pub fn new(file_path: &str) -> Option<Self>{
         let mut file = OpenOptions::new().create(false).read(true).write(true).open(file_path).ok()?;
@@ -195,6 +195,8 @@ impl Metadata {
     /// use tag_editor::metadata::Metadata;
     /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert_eq!(metadata.album().unwrap(), "Butterfly Effect".to_string())
+    /// 
+    /// 
     /// ```
     pub fn album(&self) -> Option<String>{
         self.tag.album()
@@ -317,11 +319,13 @@ impl Metadata {
     /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
     /// let bpm = metadata.bpm();
     /// assert!(bpm.is_none())
+    /// 
+    /// 
     /// ```
     pub fn bpm(&self) -> Option<String> {
         self.tag.bpm()
     }
-    /// Returns the beats per minutes of the song (TBPM)
+    /// Set the beats per minutes of the song (TBPM)
     /// 
     /// # Examples 
     /// ``` 
@@ -329,6 +333,8 @@ impl Metadata {
     /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_bpm(100);
     /// assert_eq!(metadata.bpm().unwrap().parse::<u16>().unwrap(), 100)
+    /// 
+    /// 
     /// ```
     pub fn set_bpm(&mut self, bpm : u16){
         self.tag.set_bpm(bpm)
@@ -353,6 +359,7 @@ impl Metadata {
     pub fn copyright(&self) -> Option<String> {
         self.tag.copyright()
     }
+    /// Return the recoding's day in DDMM format (TDAT)
     pub fn date(&self) -> Option<String> {
         self.tag.date()
     }
@@ -372,9 +379,21 @@ impl Metadata {
     pub fn remove_date(&mut self){
         self.tag.remove_date()
     }
+
+    /// Returns track's encoder (TBPM)
     pub fn encoded_by(&self) -> Option<String> {
         self.tag.encoded_by()
     }
+    /// Set the encoder (TENC)
+    /// 
+    /// # Examples
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.set_encoder("An encoder".to_string());
+    /// assert_eq!(metadata.encoded_by().unwrap(), "An encoder".to_string());
+    /// 
+    /// ```
     pub fn set_encoder(&mut self, encoder : String){
         self.tag.set_encoder(encoder)
     }
@@ -397,10 +416,11 @@ impl Metadata {
     pub fn file_type(&self) -> Option<String> {
         self.tag.file_type()   
     }
+    /// Returns the track's time recording in HHMM format (TIME)
     pub fn time(&self) -> Option<String> {
         self.tag.time()
     }
-    /// Remove the tracl's time recording (TIME)
+    /// Remove the track's time recording (TIME)
     /// 
     /// # Examples
     /// 
@@ -419,6 +439,16 @@ impl Metadata {
     pub fn title(&self) -> Option<String> {
         self.tag.title()
     }
+    /// Set the title (TIT2)
+    /// 
+    /// # Examples
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.set_title("A title".to_string());
+    /// assert_eq!(metadata.title().unwrap(), "A title".to_string());
+    /// 
+    /// ```
     pub fn set_title(&mut self, title : String){
         self.tag.set_title(title)
     }
@@ -438,6 +468,7 @@ impl Metadata {
     pub fn remove_title(&mut self){
         self.tag.remove_title()
     }
+    /// Returns track's length in milliseconds (TLEN)
     pub fn music_len(&self) -> Option<usize> {
         self.tag.music_len()
     }
@@ -449,17 +480,37 @@ impl Metadata {
     /// 
     /// use tag_editor::metadata::Metadata;
     /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
-    /// metadata.remove_encoder();
-    /// assert!(metadata.encoded_by().is_none());
+    /// metadata.remove_music_len();
+    /// assert!(metadata.music_len().is_none());
     /// 
     /// 
     /// ```
     pub fn remove_music_len(&mut self){
         self.tag.remove_music_len()
     }
+    /// Returns the track's year (TYER)
+    /// 
+    /// # Example 
+    /// ``` 
+    /// use tag_editor::metadata::Metadata;
+    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// assert_eq!(metadata.year().unwrap(), 2011)
+    /// 
+    /// 
+    /// ```
     pub fn year(&self) -> Option<i16> {
         self.tag.year()
     }
+    /// Set the track year (TYER)
+    /// 
+    /// # Examples
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.set_year(2021);
+    /// assert_eq!(metadata.year().unwrap(), 2021);
+    /// 
+    /// ```
     pub fn set_year(&mut self, year: i16){
         self.tag.set_year(year)
     }
@@ -479,9 +530,36 @@ impl Metadata {
     pub fn remove_year(&mut self){
         self.tag.remove_year()
     }
+    /// Returns the track position in the disc (TRCK)
+    /// 
+    /// # Example 
+    /// ``` 
+    /// use tag_editor::metadata::Metadata;
+    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// assert_eq!(metadata.track_position().unwrap(), "2".to_string())
+    /// 
+    /// 
+    /// ```
     pub fn track_position(&self) -> Option<String> {
      self.tag.track_position()
     }
+    /// Set the track position in the album (TRCK)
+    /// 
+    /// Arguments: 
+    /// * `track_pos` : track position
+    /// * `out_of` : album's number of tracks
+    /// 
+    /// # Examples
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.set_track_position(1, None);
+    /// assert_eq!(metadata.track_position().unwrap(), "1".to_string());
+    /// metadata.set_track_position(1, Some(10));
+    /// assert_eq!(metadata.track_position().unwrap(), "1/10".to_string());
+    /// 
+    /// 
+    /// ```
     pub fn set_track_position(&mut self, track_pos: u16, out_of: Option<u16>){
         self.tag.set_track_position(track_pos, out_of)
     }
@@ -501,11 +579,28 @@ impl Metadata {
     pub fn remove_track_position(&mut self){
         self.tag.remove_track_position()
     }
-    pub fn album_part(&self) -> Option<String> {
-        self.tag.album_part()
+    /// Returns the track's disc position (TPOS)
+    pub fn disc(&self) -> Option<String> {
+        self.tag.disc()
     }
-    pub fn set_album_part(&mut self, album_part : u16, out_of: Option<u16> ){
-        self.tag.set_album_part(album_part, out_of)
+    /// Set the track's disc position (TPOS)
+    /// 
+    /// Arguments: 
+    /// * `disc` : position of track's disc
+    /// * `out_of` : album's number of discs
+    /// 
+    /// # Examples
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.set_disc(2, None);
+    /// assert_eq!(metadata.disc().unwrap(), "2".to_string());
+    /// metadata.set_disc(2, Some(20));
+    /// assert_eq!(metadata.disc().unwrap(), "2/20".to_string());
+    /// 
+    /// ```
+    pub fn set_disc(&mut self, disc : u16, out_of: Option<u16> ){
+        self.tag.set_disc(disc, out_of)
     }
     /// Remove the track's disc position (TPOS)
     /// 
@@ -515,13 +610,13 @@ impl Metadata {
     /// 
     /// use tag_editor::metadata::Metadata;
     /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
-    /// metadata.remove_album_part();
-    /// assert!(metadata.album_part().is_none());
+    /// metadata.remove_disc();
+    /// assert!(metadata.disc().is_none());
     /// 
     /// 
     /// ```
-    pub fn remove_album_part(&mut self){
-        self.tag.remove_album_part()
+    pub fn remove_disc(&mut self){
+        self.tag.remove_disc()
     }
     pub fn lyrics(&self) -> Option<Vec<String>> {
         self.tag.lyrics()
