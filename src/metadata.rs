@@ -5,8 +5,9 @@ use std::convert::TryInto;
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Error, Write};
 use std::string::FromUtf8Error;
-use crate::tag::audio_type::AudioType;
-use crate::tag::audio_type::AudioType::{FLAC, MP3, OTHER};
+use crate::tag::file_format::{AudioFormat, PictureFormat};
+use crate::tag::file_format::AudioFormat::{FLAC, MP3, OTHER};
+use crate::tag::id3::code::picture_code::picture_type::PictureType;
 use crate::tag::id3::id3_tag::ID3TAG;
 use crate::tag::tag::Tag;
 use super::tag::id3::id3_header_flag::ID3HeaderFLAG;
@@ -15,7 +16,7 @@ use super::util::function::unsynchsafe;
 /// Tag's wrapper making the abstraction of the Tag source file (MP3, FLAC)
 pub struct Metadata{
     filename : String,
-    _file_type : AudioType,
+    _file_type : AudioFormat,
     tag : Tag,
     music_data : Vec<u8>
 }
@@ -28,7 +29,7 @@ fn is_flac(s: &String) -> bool{
     s == "fLaC"
 }
 
-fn read_type_audio_file(file: &mut File) -> Result<(AudioType, usize), FromUtf8Error> {
+fn read_type_audio_file(file: &mut File) -> Result<(AudioFormat, usize), FromUtf8Error> {
     let mut buffer = [0,0,0,0,0,0,0,0,0,0];
     let _ = file.read(&mut buffer);
     //let flac = String::from_utf8(buffer[0..4].into_vec());
@@ -76,6 +77,11 @@ impl Metadata {
         }
     }
 
+    /// Overwrite the tag in the origin file
+    pub fn over_write_tag(&self) -> Result<(), Error>{
+        self.write_tag(self.filename.as_str())
+    }
+
     pub fn write_tag(&self, path : &str) -> Result<(), Error> {
         let mut file = OpenOptions::new()
         .create(true).read(false).write(true).truncate(true)
@@ -85,7 +91,7 @@ impl Metadata {
         Ok(())
     }
 
-    pub fn tag(&self) -> &Tag {
+    pub (crate) fn tag(&self) -> &Tag {
         &self.tag
     }
 
@@ -93,6 +99,35 @@ impl Metadata {
     /// if the tag doesn'n contain any picture
     pub fn attached_pictures(&self) -> Vec<&Vec<u8>> {
         self.tag.attached_pictures()
+    }
+    /// Add an image to the tag's attached pictures with pictures's raw bytes
+    /// 
+    /// See the [Metadata::add_picture_from_file] method to add an image from a file
+    /// 
+    /// Arguments
+    /// * `image_format` : (PNG | JPEG)
+    /// * `picture_data` : pictures's raw bytes
+    /// * `picture_type` : 
+    /// * `description`  : image short description
+    pub fn add_picture(&mut self, image_format: &PictureFormat, picture_data : &Vec<u8>, picture_type : Option<PictureType>, description : Option<String>)
+    {
+       self.tag.add_picture(image_format, picture_data, picture_type, description)
+    }
+    /// Add an image to the tag's attached pictures where the picture is in a file
+    /// 
+    /// See the [Metadata::add_picture] method to add an image with raw bytes
+    /// Arguments
+    /// * `file_path`    : path to picture
+    /// * `image_format` : (PNG | JPEG)
+    /// * `picture_type` : 
+    /// * `description`  : image short description
+    /// 
+    pub fn add_picture_from_file(&mut self, file_path: &str, image_format: &PictureFormat, picture_type : Option<PictureType>, description : Option<String>) -> Result<(), Error>{
+        let mut image_buffer = vec![];
+        let mut file = File::open(file_path)?;
+        file.read_to_end(&mut image_buffer)?;
+        self.add_picture(image_format, &image_buffer, picture_type, description);
+        Ok(())
     }
     /// Removes all the pictures contains in the tag
     /// 
@@ -618,9 +653,11 @@ impl Metadata {
     pub fn remove_disc(&mut self){
         self.tag.remove_disc()
     }
+    /// Returns the unsynchronized lyrics in the tag
     pub fn lyrics(&self) -> Option<Vec<String>> {
         self.tag.lyrics()
     }
+    /// Returns the comments in the tags
     pub fn comments(&self) -> Option<Vec<String>> {
         Some(
             self.tag.comments()?

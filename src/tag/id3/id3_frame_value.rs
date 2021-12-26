@@ -1,4 +1,4 @@
-use crate::{tag::{traits::{RawSize, ToBytes, StringConvert, SplitString}, reading_mode::{TextEncoding, NULL_TERMINATE}}, util::function::{ToU16, ToU32}};
+use crate::{tag::{traits::{RawSize, ToBytes, StringConvert, SplitString, ToU32, ToU16}, reading_mode::{TextEncoding, NULL_TERMINATE}, file_format::PictureFormat}};
 
 use super::{code::{event_timing_code::time_stamp_format::TimeStampFormat, picture_code::picture_type:: PictureType}, id3_frameid::ID3FRAMEID};
 use super::id3_frameid::ID3FRAMEID::*;
@@ -312,6 +312,27 @@ impl RawSize for AttachedPictureFrame{
     }
 }
 impl AttachedPictureFrame {
+    pub (crate) fn new(image_format: &PictureFormat, picture_data: &Vec<u8>, picture_type: Option<PictureType>, description: Option<String>) -> Self {
+        let description = match description {
+            Some(s) => s,
+            None => "".to_string()
+        };
+        let text_encode = if description.is_ascii() {
+            TextEncoding::Iso8859_1
+        }else {TextEncoding::UnicodeUtf16};
+
+        let picture_type = match picture_type {
+            Some(pt) => pt,
+            None => PictureType::Other
+        };
+        Self {
+            text_encode,
+            mime_type: image_format.to_mime_string(),
+            picture_type,
+            description,
+            picture_data: picture_data.clone()
+        }
+    }
     pub(crate) fn get_picture_data(&self) -> &Vec<u8>{
         &self.picture_data
     }
@@ -755,9 +776,9 @@ impl FrameValue {
                 }))
             }
             RBUF => {
-                let buffer_size = buffer.drain(0..4).collect::<Vec<u8>>().to_u32_be().unwrap();
+                let buffer_size = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_be().unwrap();
                 let embedded_info = buffer.remove(0) == 1;
-                let offset = buffer.drain(0..4).collect::<Vec<u8>>().to_u32_be().unwrap();
+                let offset = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_be().unwrap();
                 Some(Self::RBSF(RecommendedBufferSizeFrame {
                     buffer_size,
                     embedded_info_flag: embedded_info,
@@ -768,8 +789,8 @@ impl FrameValue {
                 let start_size = buffer.len();
                 //let owner_id = first_string(buffer, &TextEncoding::UnicodeUtf8, true)?;
                 let owner_id = buffer.first_matched_string(&TextEncoding::Iso8859_1, true)?;
-                let preview_start  = buffer.drain(0..2).collect::<Vec<u8>>().to_u16_be()?;
-                let preview_lenght  = buffer.drain(0..2).collect::<Vec<u8>>().to_u16_be()?;
+                let preview_start  = buffer.drain(0..2).collect::<Vec<u8>>().u16_from_be()?;
+                let preview_lenght  = buffer.drain(0..2).collect::<Vec<u8>>().u16_from_be()?;
                 let end_size = start_size - buffer.len();
                 let encryption_info = buffer.drain(0..(size as usize - end_size )).collect();
                 Some(Self::AEF(AudioEncryptionFrame {

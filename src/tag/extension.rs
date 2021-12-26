@@ -1,6 +1,33 @@
 use crate::util::function::LSBYTE_MASK;
 
-use super::{traits::{SliceConvert, StringConvert, SplitUF8, SplitUF16, ToBytes, SplitString}, reading_mode::{TextEncoding, NULL_TERMINATE}};
+use super::{traits::{SliceConvert, StringConvert, SplitUF8, SplitUF16, ToBytes, SplitString, ToU32, ToU16}, reading_mode::{TextEncoding, NULL_TERMINATE}};
+
+
+impl ToU32 for Vec<u8> {
+    fn u32_from_be(&self) -> Option<u32> {
+        if self.len() < 3 {
+            None
+        }else {
+            Some(
+                u32::from_be_bytes([self.get(0).unwrap().clone(), self.get(1).unwrap().clone(),
+                self.get(2).unwrap().clone(), self.get(3).unwrap().clone()
+                ])
+            )
+        }
+    }
+}
+
+impl ToU16 for Vec<u8> {
+    fn u16_from_be(&self) -> Option<u16> {
+        if self.len() < 1 {
+            None
+        }else {
+            Some(
+                u16::from_be_bytes([self.get(0).unwrap().clone(), self.get(1).unwrap().clone()])
+            )
+        }
+    }
+}
 
 
 impl ToBytes for String {

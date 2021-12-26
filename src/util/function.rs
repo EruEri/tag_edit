@@ -28,35 +28,6 @@ pub (crate) fn synchsafe(input : u32) -> u32 {
 }
 
 
-pub trait ToU32 {
-    fn to_u32_be(&self) -> Option<u32>;
-}
-pub trait ToU16 {
-    fn to_u16_be(&self) -> Option<u16>;
-}
 
-impl ToU32 for Vec<u8> {
-    fn to_u32_be(&self) -> Option<u32> {
-        if self.len() < 3 {
-            None
-        }else {
-            Some(
-                u32::from_be_bytes([self.get(0).unwrap().clone(), self.get(1).unwrap().clone(),
-                self.get(2).unwrap().clone(), self.get(3).unwrap().clone()
-                ])
-            )
-        }
-    }
-}
 
-impl ToU16 for Vec<u8> {
-    fn to_u16_be(&self) -> Option<u16> {
-        if self.len() < 1 {
-            None
-        }else {
-            Some(
-                u16::from_be_bytes([self.get(0).unwrap().clone(), self.get(1).unwrap().clone()])
-            )
-        }
-    }
-}
+

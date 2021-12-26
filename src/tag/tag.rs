@@ -1,5 +1,7 @@
 
 use crate::tag::id3::id3_tag::ID3TAG;
+use super::file_format::PictureFormat;
+use super::id3::code::picture_code::picture_type::PictureType;
 use super::traits::TagSize;
 use crate::tag::id3::id3_frameid::ID3FRAMEID::*;
 use crate::tag::id3::id3_frameid::ID3TEXTFRAMEID::*;
@@ -20,6 +22,8 @@ impl Tag {
             Self::ID3(tag) => tag.size()
         }
     }
+
+
 }
 
 impl Tag {
@@ -27,6 +31,11 @@ impl Tag {
     pub fn attached_pictures(&self) -> Vec<&Vec<u8>> {
         match self {
             Self::ID3(t) => t.get_attached_picture()
+        }
+    }
+    pub(crate) fn add_picture(&mut self, image_format: &PictureFormat, picture_data: &Vec<u8>, picture_type: Option<PictureType>, description: Option<String>) {
+        match self {
+            Self::ID3(tag) => tag.add_picture(image_format, picture_data, picture_type, description)
         }
     }
     pub fn remove_all_attached_pictures(&mut self){

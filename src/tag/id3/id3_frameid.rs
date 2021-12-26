@@ -7,68 +7,68 @@ pub(crate) enum ID3FRAMEID {
     APIC,
     // [[#sec4.20|Audio encryption]]
     AENC,
-    //[#sec4.11 Comments]
+    /// sec4.11 Comments]
     COMM,
-    //[#sec4.25 Commercial frame]
+    /// sec4.25 Commercial frame]
     COMR,
-    //[#sec4.26 Encryption method registration]
+    /// sec4.26 Encryption method registration]
     ENCR,
-    //[#sec4.13 Equalization]
+    /// sec4.13 Equalization]
     EQUA,
-    //[#sec4.6 Event timing codes]
+    /// sec4.6 Event timing codes]
     ETCO,
-    //[#sec4.16 General encapsulated object]
+    /// sec4.16 General encapsulated object]
     GEOB,
-    //[#sec4.27 Group identification registration]
+    /// sec4.27 Group identification registration]
     GRID,
-    //[#sec4.4 Involved people list]
+    /// sec4.4 Involved people list]
     IPLS,
-    //[#sec4.21 Linked information]
+    /// sec4.21 Linked information]
     LINK,
-    //[#sec4.5 Music CD identifier]
+    /// sec4.5 Music CD identifier]
     MCDI,
-    //[#sec4.7 MPEG location lookup table]
+    /// sec4.7 MPEG location lookup table]
     MLLT,
-    //[#sec4.24 Ownership frame]
+    /// sec4.24 Ownership frame]
     OWNE,
-    //[#sec4.17 Play counter]
+    /// sec4.17 Play counter]
     PRIV,
-    //[#sec4.18 Popularimeter]
+    /// sec4.18 Popularimeter]
     PCNT,
-    //[#sec4.22 Position synchronisation frame]
+    /// sec4.22 Position synchronisation frame]
     POPM,
     POSS,
-    RBUF, //[#sec4.19 Recommended buffer size]
-    RVAD, //[#sec4.12 Relative volume adjustment]
-    RVRB, //[#sec4.14 Reverb]
-    SYLT, //[#sec4.10 Synchronized lyric/text]
-    SYTC, //[#sec4.8 Synchronized tempo codes]
+    RBUF, /// sec4.19 Recommended buffer size]
+    RVAD, /// sec4.12 Relative volume adjustment]
+    RVRB, /// sec4.14 Reverb]
+    SYLT, /// sec4.10 Synchronized lyric/text]
+    SYTC, /// sec4.8 Synchronized tempo codes]
     TCMP,
-    //[#TYER Year]
+    
     TXXX,
-    //[#TXXX User defined text information frame]
+    /// TXXX User defined text information frame]
     UFID,
-    //[#sec4.1 Unique file identifier]
+    /// sec4.1 Unique file identifier]
     USER,
-    //[#sec4.23 Terms of use]
+    /// sec4.23 Terms of use]
     USLT,
-    //[#sec4.9 Unsychronized lyric/text transcription]
+    /// sec4.9 Unsychronized lyric/text transcription]
     WCOM,
-    //[#WCOM Commercial information]
+    /// WCOM Commercial information]
     WCOP,
-    //[#WCOP Copyright/Legal information]
+    /// WCOP Copyright/Legal information]
     WOAF,
-    //[#WOAF Official audio file webpage]
+    /// WOAF Official audio file webpage]
     WOAR,
-    //[#WOAS Official audio source webpage]
+    /// WOAS Official audio source webpage]
     WOAS,
-    //[#WOAR Official artist/performer webpage]
+    /// WOAR Official artist/performer webpage]
     WORS,
-    //[#WPAY Payment]
+    /// WPAY Payment]
     WPAY,
-    //[#WPUB Publishers official webpage]
+    /// WPUB Publishers official webpage]
     WPUB,
-    //[#WXXX User defined URL link frame]
+    /// WXXX User defined URL link frame]
     WXXX,
 }
 
@@ -179,48 +179,84 @@ impl ID3FRAMEID {
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ID3TEXTFRAMEID {
-    TALB, //[#TALB Album/Movie/Show title]
-    TBPM, //[#TBPM BPM (beats per minute)]
-    TCOM, //[#TCOM Composer]
-    TCON, //[#TCON Content type]
-    TCOP, //[#TCOP Copyright message]
-    TDAT, //[#TDAT Date]
-    TDLY, //[#TDLY Playlist delay]
-    TENC, //[#TENC Encoded by]
-    TEXT, //[#TEXT Lyricist/Text writer]
-    TFLT, //[#TFLT File type]
-    TIME, //[#TIME Time]
-    TIT1, //[#TIT1 Content group description]
-    TIT2, //[#TIT2 Title/songname/content description]
-    TIT3, //[#TIT3 Subtitle/Description refinement]
-    TKEY, //[#TKEY Initial key]
-    TLAN, //[#TLAN Language(s)]
-    TLEN, //[#TLEN Length]
-    TSOT, // Extra
+    /// TALB Album/Movie/Show title
+    TALB, 
+    /// TBPM BPM (beats per minute)]
+    TBPM, 
+    /// TCOM Composer]
+    TCOM, 
+    /// TCON Content type]
+    TCON, 
+    /// TCOP Copyright message]
+    TCOP, 
+    /// TDAT Date]
+    TDAT, 
+    /// TDLY Playlist delay]
+    TDLY, 
+    /// TENC Encoded by]
+    TENC,
+    /// TEXT Lyricist/Text writer] 
+    TEXT,
+    /// TFLT File type] 
+    TFLT, 
+    /// TIME Time]
+    TIME,
+    /// TIT1 Content group description] 
+    TIT1, 
+    /// TIT2 Title/songname/content description]
+    TIT2, 
+    /// TIT3 Subtitle/Description refinement]
+    TIT3, 
+    /// TKEY Initial key]
+    TKEY, 
+    /// TLAN Language(s)]
+    TLAN, 
+    /// TLEN Length]
+    TLEN, 
+    // Extra
+    TSOT, 
     TSO2,
-    TMED, //[#TMED Media type]
-    TOAL, //[#TOAL Original album/movie/show title]
-    TOFN, //[#TOFN Original filename]
-    TOLY, //[#TOLY Original lyricist(s)/text writer(s)]
-    TOPE, //[#TOPE Original artist(s)/performer(s)]
-    TORY, //[#TORY Original release year]
-    TOWN, //[#TOWN File owner/licensee]
-    TPE1, //[#TPE1 Lead performer(s)/Soloist(s)]
-    TPE2, //[#TPE2 Band/orchestra/accompaniment]
-    TPE3, //[#TPE3 Conductor/performer refinement]
-    TPE4, //[#TPE4 Interpreted, remixed, or otherwise modified by]
-    TPOS, //[#TPOS Part of a set]
-    TPUB, //[#TPUB Publisher]
-    TRCK, //[#TRCK Track number/Position in set]
-    TRDA, //[#TRDA Recording dates]
-    TRSN, //[#TRSN Internet radio station name]
-    TRSO, //[#TRSO Internet radio station owner]
+    /// TMED Media type]
+    TMED, 
+    /// TOAL Original album/movie/show title]
+    TOAL, 
+    /// TOFN Original filename]
+    TOFN, 
+    /// TOLY Original lyricist(s)/text writer(s)]
+    TOLY, 
+    /// TOPE Original artist(s)/performer(s)]
+    TOPE, 
+    /// TORY Original release year]
+    TORY, 
+    /// TOWN File owner/licensee]
+    TOWN, 
+    /// TPE1 Lead performer(s)/Soloist(s)]
+    TPE1, 
+    /// TPE2 Band/orchestra/accompaniment]
+    TPE2, 
+    /// TPE3 Conductor/performer refinement]
+    TPE3, 
+    /// TPE4 Interpreted, remixed, or otherwise modified by]
+    TPE4, 
+     /// TPOS Part of a set]
+    TPOS, 
+   /// TPUB Publisher]
+    TPUB, 
+    /// TRCK Track number/Position in set]
+    TRCK, 
+    /// TRDA Recording dates]
+    TRDA, 
+    /// TRSN Internet radio station name]
+    TRSN, 
+    /// TRSO Internet radio station owner]
+    TRSO, 
+    /// TSIZ Size]
     TSIZ,
-    //[#TSIZ Size]
+    /// TSRC ISRC (international standard recording code)]
     TSRC,
-    //[#TSRC ISRC (international standard recording code)]
+    /// TSEE Software/Hardware and settings used for encoding]
     TSSE,
-    //[#TSEE Software/Hardware and settings used for encoding]
+    /// TYER Year
     TYER,
 }
 

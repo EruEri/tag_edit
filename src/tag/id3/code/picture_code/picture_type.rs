@@ -1,6 +1,6 @@
 #[repr(u8)]
 #[derive(Clone, Copy, Debug)]
-pub(crate) enum PictureType {
+pub enum PictureType {
     Other = 0x00,
     FileIcon,
     OtherFileIcon,

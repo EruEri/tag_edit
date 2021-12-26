@@ -1,10 +1,10 @@
 //! A library to read and write tag from audio files.
 //! Currently, only ID3v2.3 supported
 
-
-mod tag;
-mod util;
 pub mod metadata;
+pub mod tag;
+mod util;
+
 
 
 

@@ -1,9 +1,11 @@
+use crate::tag::file_format::PictureFormat;
 use crate::tag::id3::id3_frame::ID3FRAME;
 use crate::tag::id3::id3_header_flag::ID3HeaderFLAG;
 use crate::tag::id3::id3_header_flag::ID3HeaderFLAG::{ExperimentalIndicator, ExtendedHeader, Unsynchronisation};
 use crate::tag::traits::{FrameSize, TagSize};
 use crate::util::function::{unsynchsafe, synchsafe};
-use super::id3_frame_value::{FrameValue, TextFrame};
+use super::code::picture_code::picture_type::PictureType;
+use super::id3_frame_value::{FrameValue, TextFrame, AttachedPictureFrame};
 use super::id3_frameid::ID3FRAMEID;
 
 pub struct ID3TAG {
@@ -150,9 +152,17 @@ impl ID3TAG {
         self.recalcule_size();
     }
 
+    pub (crate) fn add_picture(&mut self, image_format: &PictureFormat, picture_data: &Vec<u8>, picture_type: Option<PictureType>, description: Option<String>){
+        let apic_value = AttachedPictureFrame::new(image_format, picture_data, picture_type, description);
+        let frame = (ID3FRAMEID::APIC, FrameValue::APF(apic_value)).into();
+        self.frames.push(frame);
+        self.recalcule_size()
+    }
+
     pub(crate) fn remove_frames(&mut self, frame_id: &ID3FRAMEID) {
         self.frames
-        .retain(|frame| frame.get_frame_id() != frame_id)
+        .retain(|frame| frame.get_frame_id() != frame_id);
+        self.recalcule_size();
     }
 
     pub (crate) fn get_unsynch_lyrics(&self)-> Option<Vec<String>> {
