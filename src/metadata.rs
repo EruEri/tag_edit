@@ -79,11 +79,11 @@ impl Metadata {
     }
 
     /// Overwrite the tag in the origin file
-    pub fn over_write_tag(&self) -> Result<(), Error>{
+    pub fn overwrite_tag(&self) -> Result<(), Error>{
         self.write_tag(self.filename.as_str())
     }
     /// Write the tag and the audio content at `path`.
-    /// The file will be created if not exists or will be truncated if exists
+    /// The file will be created if doesn't exist or will be truncated if exists
     pub fn write_tag(&self, path : &str) -> Result<(), Error> {
         let mut file = OpenOptions::new()
         .create(true).read(false).write(true).truncate(true)
@@ -152,6 +152,7 @@ impl Metadata {
     /// use tag_editor::metadata::Metadata;
     /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert_eq!(metadata.artist(), Some("Maon Kurosaki".to_string()));
+    /// 
     /// 
     /// ```
     pub fn artist(&self) -> Option<String>{
@@ -333,7 +334,7 @@ impl Metadata {
         self.tag.set_publisher(publisher)
     }
 
-     /// Remove the publisher (TPUB)
+    /// Remove the publisher (TPUB)
     /// 
     /// # Examples
     /// 
@@ -392,6 +393,35 @@ impl Metadata {
     /// ```
     pub fn remove_bpm(&mut self){
         self.tag.remove_bpm()
+    }
+    /// Returns the composers of the track (TCOM)
+    pub fn composers(&self) -> Option<String> {
+        self.tag.composers()
+    }
+    /// Set the composers (TCOM)
+    /// 
+    /// # Examples 
+    /// ``` 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.set_composers("A composers".into());
+    /// assert_eq!(metadata.composers().unwrap(), "A composers".to_string());
+    /// ```
+    pub fn set_composers(&mut self, composers: String) {
+        self.tag.set_composers(composers)
+    }
+    /// Remove the composers (TCOM)
+    /// # Examples 
+    /// ``` 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.set_composers("A composers".into());
+    /// assert!(metadata.composers().is_some());
+    /// metadata.remove_composers();
+    /// assert!(metadata.composers().is_none())
+    /// 
+    pub fn remove_composers(&mut self) {
+        self.tag.remove_composers()
     }
     /// Returns the copyright message (TCOP)
     pub fn copyright(&self) -> Option<String> {
@@ -474,6 +504,16 @@ impl Metadata {
     pub fn remove_time(&mut self){
         self.tag.remove_time()
     }
+    /// Returns the title (TIT2)
+    /// 
+    /// # Examples
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// assert_eq!(metadata.title(), Some("VANISHING POINT".to_string()));
+    /// 
+    /// 
+    /// ```
     pub fn title(&self) -> Option<String> {
         self.tag.title()
     }
@@ -731,6 +771,7 @@ impl Metadata {
     /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_all_comments();
     /// assert!(metadata.comments().is_empty())
+    /// 
     /// 
     /// ```
     pub fn remove_all_comments(&mut self){

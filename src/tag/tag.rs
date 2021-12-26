@@ -146,9 +146,9 @@ impl Tag {
             Tag::ID3(tag) => tag.get_text_from_text_frame(&TEXTFRAME(TCOM)),
         }
     }
-    pub fn set_composers(&mut self, composers : &Vec<String>){
+    pub fn set_composers(&mut self, composers : String){
         match self {
-            Tag::ID3(tag) => tag.set_text_frame(TEXTFRAME(TCOM), composers.join(", "))
+            Tag::ID3(tag) => tag.set_text_frame(TEXTFRAME(TCOM), composers)
         }
     }
     pub fn remove_composers(&mut self) {
