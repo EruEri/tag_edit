@@ -3,9 +3,10 @@ use crate::tag::id3::id3_frame::ID3FRAME;
 use crate::tag::id3::id3_header_flag::ID3HeaderFLAG;
 use crate::tag::id3::id3_header_flag::ID3HeaderFLAG::{ExperimentalIndicator, ExtendedHeader, Unsynchronisation};
 use crate::tag::traits::{FrameSize, TagSize};
+use crate::tag_error::TagError;
 use crate::util::function::{unsynchsafe, synchsafe};
 use super::code::picture_code::picture_type::PictureType;
-use super::id3_frame_value::{FrameValue, TextFrame, AttachedPictureFrame};
+use super::id3_frame_value::{FrameValue, TextFrame, AttachedPictureFrame, UnsyncLyricsFrame, CommentFrame};
 use super::id3_frameid::ID3FRAMEID;
 
 pub struct ID3TAG {
@@ -165,8 +166,8 @@ impl ID3TAG {
         self.recalcule_size();
     }
 
-    pub (crate) fn get_unsynch_lyrics(&self)-> Option<Vec<String>> {
-        Some (self.frames.iter()
+    pub (crate) fn get_unsynch_lyrics(&self) -> Vec<String> {
+        self.frames.iter()
         .filter_map(|id3_frame| {
             match id3_frame.as_unsynchroned_lyrics_frame(){
                 None => None,
@@ -175,12 +176,31 @@ impl ID3TAG {
             }
         })
         .collect::<Vec<String>>()
-     )
     }
 
-    pub (crate) fn get_comments(&self) -> Option<Vec<(String, String)>> {
-        Some(
-            self.frames
+    pub (crate) fn add_lyrics(&mut self, lang: String, description: Option<String>, text: String) -> Result<(), TagError>{
+        let description = description.unwrap_or("".into());
+        if lang.len() != 3 {
+            Err(TagError::LangWrongSize)
+        }else if self.frames.iter()
+        .any(|frame| {
+            match frame.as_unsynchroned_lyrics_frame() {
+                None => false,
+                Some(f) => f.get_language() == &lang && f.get_content_description() == &text
+            }
+        }) {
+            Err(TagError::ReusedLangDescription)
+        }else {
+            let frame_value = UnsyncLyricsFrame::new(lang, description, text);
+            let frame = (ID3FRAMEID::USLT,FrameValue::ULF(frame_value)).into();
+            self.frames.push(frame);
+            self.recalcule_size();
+            Ok(())
+        }
+    }
+
+    pub (crate) fn get_comments(&self) -> Vec<(String, String)> {
+        self.frames
             .iter()
             .filter_map(|id3_frame| {
                 match id3_frame.as_comment_frame() {
@@ -189,7 +209,27 @@ impl ID3TAG {
                 }
             })
             .collect::<Vec<(String, String)>>()
-        )
+    }
+
+    pub (crate) fn add_comment(&mut self, lang: String, description: Option<String>, text: String) -> Result<(), TagError>{
+        let description = description.unwrap_or("".into());
+        if lang.len() != 3 {
+            Err(TagError::LangWrongSize)
+        }else if self.frames.iter()
+        .any(|frame| {
+            match frame.as_comment_frame() {
+                None => false,
+                Some(f) => f.get_language() == &lang && f.get_description() == &description
+            }
+        }) {
+            Err(TagError::ReusedLangDescription)
+        }else {
+            let frame_value = CommentFrame::new(lang, description, text);
+            let frame = (ID3FRAMEID::USLT,FrameValue::CF(frame_value)).into();
+            self.frames.push(frame);
+            self.recalcule_size();
+            Ok(())
+        }
     }
 
  

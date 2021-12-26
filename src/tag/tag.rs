@@ -1,5 +1,6 @@
 
 use crate::tag::id3::id3_tag::ID3TAG;
+use crate::tag_error::TagError;
 use super::file_format::PictureFormat;
 use super::id3::code::picture_code::picture_type::PictureType;
 use super::traits::TagSize;
@@ -22,7 +23,6 @@ impl Tag {
             Self::ID3(tag) => tag.size()
         }
     }
-
 
 }
 
@@ -148,7 +148,7 @@ impl Tag {
     }
     pub fn set_composers(&mut self, composers : &Vec<String>){
         match self {
-            Tag::ID3(tag) => tag.set_text_frame(TEXTFRAME(TCOM), composers.join(","))
+            Tag::ID3(tag) => tag.set_text_frame(TEXTFRAME(TCOM), composers.join(", "))
         }
     }
     pub fn remove_composers(&mut self) {
@@ -286,15 +286,39 @@ impl Tag {
             Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TPOS)),
         }
     }
-    pub fn lyrics(&self) -> Option<Vec<String>> {
+    pub fn lyrics(&self) -> Vec<String> {
         match self {
             Self::ID3(tag) => tag.get_unsynch_lyrics()
         }
     }
-    pub fn comments(&self) -> Option<Vec<(String, String)>> {
+    pub(crate) fn add_lyrics(&mut self, lang: String, description: Option<String>, text: String) -> Result<(), TagError> {
+        match self {
+            Self::ID3(tag) => tag.add_lyrics(lang, description, text) 
+        }
+    }
+    pub(crate) fn remove_all_lyrics(&mut self) {
+        match self {
+            Self::ID3(tag) => tag.remove_frames(&USLT)
+        }
+    }
+    
+    pub fn comments(&self) -> Vec<(String, String)> {
         match self {
             Self::ID3(tag) => tag.get_comments()
         }
     }
+    pub(crate) fn add_comment(&mut self, lang: String, description: Option<String>, text: String) -> Result<(), TagError> {
+        match self {
+            Self::ID3(tag) => tag.add_comment(lang, description, text) 
+        }
+    }
+
+    pub(crate) fn remove_all_comments(&mut self) {
+        match self {
+            Self::ID3(tag) => tag.remove_frames(&COMM)
+        }
+    }
+
+
 
 }

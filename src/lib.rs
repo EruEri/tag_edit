@@ -2,6 +2,7 @@
 //! Currently, only ID3v2.3 supported
 
 pub mod metadata;
+pub mod tag_error;
 pub mod tag;
 mod util;
 

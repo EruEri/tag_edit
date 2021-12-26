@@ -10,6 +10,7 @@ use crate::tag::file_format::AudioFormat::{FLAC, MP3, OTHER};
 use crate::tag::id3::code::picture_code::picture_type::PictureType;
 use crate::tag::id3::id3_tag::ID3TAG;
 use crate::tag::tag::Tag;
+use crate::tag_error::TagError;
 use super::tag::id3::id3_header_flag::ID3HeaderFLAG;
 use super::util::function::unsynchsafe;
 
@@ -81,7 +82,8 @@ impl Metadata {
     pub fn over_write_tag(&self) -> Result<(), Error>{
         self.write_tag(self.filename.as_str())
     }
-
+    /// Write the tag and the audio content at `path`.
+    /// The file will be created if not exists or will be truncated if exists
     pub fn write_tag(&self, path : &str) -> Result<(), Error> {
         let mut file = OpenOptions::new()
         .create(true).read(false).write(true).truncate(true)
@@ -109,6 +111,7 @@ impl Metadata {
     /// * `picture_data` : pictures's raw bytes
     /// * `picture_type` : 
     /// * `description`  : image short description
+    /// 
     pub fn add_picture(&mut self, image_format: &PictureFormat, picture_data : &Vec<u8>, picture_type : Option<PictureType>, description : Option<String>)
     {
        self.tag.add_picture(image_format, picture_data, picture_type, description)
@@ -654,17 +657,84 @@ impl Metadata {
         self.tag.remove_disc()
     }
     /// Returns the unsynchronized lyrics in the tag
-    pub fn lyrics(&self) -> Option<Vec<String>> {
+    pub fn lyrics(&self) -> Vec<String> {
         self.tag.lyrics()
     }
+    /// Add Unsynchronized lyrics to the tag 
+    /// 
+    /// # Errors
+    /// This function will return an `TagError` if :
+    /// 
+    /// * lang parameter is not ascii or length != 3
+    /// * Tuple(`lang`, `description`) already exists in the lyrics frames
+    /// 
+    /// 
+    /// # Examples 
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_all_lyrics();
+    /// metadata.add_lyrics("eng".to_string(), None, "Some Lyrics".into()).unwrap();
+    /// assert_eq!(metadata.lyrics().first().unwrap(), &"Some Lyrics".to_string())
+    /// 
+    /// ```
+    pub fn add_lyrics(&mut self, lang : String, description : Option<String>, text : String) -> Result<(), TagError>{
+        self.tag.add_lyrics(lang, description, text)
+    }
+    /// Remove all the unsynchronized lyrics in the tag
+    /// 
+    /// # Example 
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_all_lyrics();
+    /// assert!(metadata.lyrics().is_empty())
+    /// 
+    /// ```
+    pub fn remove_all_lyrics(&mut self){
+        self.tag.remove_all_lyrics()
+    }
+
     /// Returns the comments in the tags
-    pub fn comments(&self) -> Option<Vec<String>> {
-        Some(
-            self.tag.comments()?
+    pub fn comments(&self) -> Vec<String> {
+            self.tag.comments()
             .iter()
             .map( |(_, text)| text.clone())
             .collect::<Vec<String>>()
-        )
+    }
+    /// Add a comment to the tag 
+    /// 
+    /// # Errors
+    /// This function will return an `TagError` if :
+    /// 
+    /// * lang parameter is not ascii or length != 3
+    /// * Tuple(`lang`, `description`) already exists in the comments frames
+    /// 
+    /// 
+    /// # Examples 
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_all_comments();
+    /// metadata.add_comment("eng".to_string(), None, "A random comment".into()).unwrap();
+    /// assert_eq!(metadata.comments().first().unwrap(), &"A random comment".to_string())
+    /// 
+    /// ```
+    pub fn add_comment(&mut self, lang : String, description : Option<String>, text : String) -> Result<(), TagError>{
+        self.tag.add_comment(lang, description, text)
+    }
+    /// Remove all the comments in the tag
+    /// 
+    /// # Example 
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_all_comments();
+    /// assert!(metadata.comments().is_empty())
+    /// 
+    /// ```
+    pub fn remove_all_comments(&mut self){
+        self.tag.remove_all_comments()
     }
 
 }

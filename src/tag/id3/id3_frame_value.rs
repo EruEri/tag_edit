@@ -197,8 +197,20 @@ impl RawSize for UnsyncLyricsFrame {
     }
 }
 impl UnsyncLyricsFrame {
-    pub (crate) fn get_text_encoding(&self) -> &TextEncoding {
-        &self.text_encoding
+    pub (crate) fn new(lang: String, description: String, text: String) -> Self {
+        let text_encoding = if description.is_ascii() && text.is_ascii() {
+            TextEncoding::Iso8859_1
+        }else {TextEncoding::UnicodeUtf16};
+        Self {
+            text_encoding,
+            language: lang,
+            content_description: description,
+            text
+        }
+    }
+
+    pub (crate) fn get_language(&self) -> &String {
+        &self.language
     }
 
     pub (crate) fn get_content_description(&self) -> &String {
@@ -246,6 +258,20 @@ impl RawSize for CommentFrame{
     }
 }
 impl CommentFrame {
+    pub (crate) fn new(lang: String, description: String, text: String) -> Self {
+        let text_encoding = if description.is_ascii() && text.is_ascii() {
+            TextEncoding::Iso8859_1
+        }else {TextEncoding::UnicodeUtf16};
+        Self {
+            text_encoding,
+            language: lang,
+            content_description: description,
+            text
+        }
+    }
+    pub (crate) fn get_language(&self) -> &String {
+        &self.language
+    }
     pub (crate) fn get_description(&self) -> &String {
        &self.content_description 
     }
@@ -342,7 +368,7 @@ pub(crate) struct GeneralEncapsulatedObjectFrame {
     text_encoding : TextEncoding,
     mime_type : String,
     filename : String,
-    content : Vec<u8>,
+    _content : Vec<u8>,
     encapsulated_object : Vec<u8>
 }
 impl RawSize for GeneralEncapsulatedObjectFrame{
@@ -759,7 +785,7 @@ impl FrameValue {
                     text_encoding: encode,
                     mime_type,
                     filename,
-                    content,
+                    _content: content,
                     encapsulated_object
                 }))
             }

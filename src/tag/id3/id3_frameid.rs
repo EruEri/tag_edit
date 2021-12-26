@@ -171,6 +171,7 @@ impl Display for ID3FRAMEID {
 }
 
 impl ID3FRAMEID {
+    #[allow(dead_code)]
     pub(crate) fn is_text_frame(&self) -> bool {
         let frame_name = self.to_string();
         frame_name.starts_with("T") && frame_name != "TXXX" && frame_name != "TCMP"
