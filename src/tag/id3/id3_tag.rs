@@ -150,7 +150,7 @@ impl ID3TAG {
         self.recalcule_size();
     }
 
-    pub(crate) fn remove_text_frame(&mut self, frame_id: &ID3FRAMEID) {
+    pub(crate) fn remove_frames(&mut self, frame_id: &ID3FRAMEID) {
         self.frames
         .retain(|frame| frame.get_frame_id() != frame_id)
     }

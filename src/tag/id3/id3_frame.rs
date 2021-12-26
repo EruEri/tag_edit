@@ -121,16 +121,18 @@ impl ID3FRAME {
     pub (crate) fn get_frame_id(&self) -> &ID3FRAMEID {
         &self.frame_id
     }
+    #[allow(dead_code)]
     pub(crate) fn get_frame_value(&self) -> &FrameValue {
         &self.value
     }
+    #[allow(dead_code)]
     pub (crate) fn get_frame_value_mut(&mut self) -> &mut FrameValue {
         &mut self.value
     }
     pub(crate) fn as_attached_picture_frame(&self) -> Option<&AttachedPictureFrame> {
         self.value.as_attached_picture_frame()
     }
-
+    #[allow(dead_code)]
     pub(crate) fn as_attached_picture_frame_mut(&mut self) -> Option<&mut AttachedPictureFrame> {
         self.value.as_attached_picture_frame_mut()
     }
@@ -138,6 +140,7 @@ impl ID3FRAME {
     pub (crate) fn as_unsynchroned_lyrics_frame(&self) -> Option<&UnsyncLyricsFrame> {
         self.value.as_unsynchroned_lyrics_frame()
     }
+    #[allow(dead_code)]
     pub (crate) fn as_unsynchroned_lyrics_frame_mut(&mut self) -> Option<&mut UnsyncLyricsFrame> {
         self.value.as_unsynchroned_lyrics_frame_mut()
     }
@@ -145,6 +148,7 @@ impl ID3FRAME {
     pub (crate) fn as_comment_frame(&self) -> Option<&CommentFrame>{
         self.value.as_comment_frame()
     }
+    #[allow(dead_code)]
     pub (crate) fn as_comment_frame_mut(&mut self) -> Option<&mut CommentFrame>{
         self.value.as_comment_frame_mut()
     }

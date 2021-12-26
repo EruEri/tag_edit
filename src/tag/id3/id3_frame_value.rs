@@ -586,31 +586,6 @@ impl FrameValue {
                 // println!("Description :=> {}\nText :=> {}", description, text);
                 Some( Self::UIF( UserInfoFrame { text_encoding: encode, description, text}))
             }
-            // id if id.to_string().starts_with("T") => {
-            //     let encode = match TextEncoding::from_raw_value(buffer.remove(0)) {
-            //         Some(e) => e,
-            //         None => TextEncoding::Iso8859_1,
-            //     };
-            //     // println!("encode : {:?}", encode);
-            //     if id == ID3FRAMEID::TXXX {
-            //         let buffer_i : Vec<u8> = buffer.drain(0..((size-1) as usize)).collect();
-            //         //let strings = if encode.is_one_byte() {split_to_string_utf8(&buffer_i) } else {split_to_string_utf16(&to_u16_le(&buffer_i))};
-            //         let strings = buffer_i.split_to_string(&encode);
-            //         let (description, text ) = if strings.len() == 1 {
-            //             ("".into(), strings.first()?.clone())
-            //         }else {(strings.first()?.clone(), strings.get(1)?.clone() ) };
-            //         // println!("Description :=> {}\nText :=> {}", description, text);
-            //         Some( Self::UIF( UserInfoFrame { text_encoding: encode, description, text}))
-            //         //Some(Self::Undefined(buffer))
-            //     }else {
-            //         let string_buff = buffer.drain(0..((size-1) as usize)).collect::<Vec<u8>>();
-            //         // let text = vec_to_string(string_buff, &encode)?;
-            //         let text = string_buff.into_string(&encode)?;
-            //         // println!("Text Value :=> {}", &text);
-            //         let text_frame = TextFrame { text_encoding : encode, text};
-            //         Some( Self::TF( text_frame) )
-            //     }
-            // }
             WCOM | WCOP | WOAF | WOAR | WOAS | WORS | WPAY | WPUB => {
                 let url =  String::from_utf8(buffer.drain(0..((size) as usize)).collect()).ok()?;
                 //println!("buffer remain : {}", buffer.len());

@@ -94,6 +94,19 @@ impl Metadata {
     pub fn attached_pictures(&self) -> Vec<&Vec<u8>> {
         self.tag.attached_pictures()
     }
+    /// Removes all the pictures contains in the tag
+    /// 
+    /// # Examples
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// assert!(!metadata.attached_pictures().is_empty());
+    /// metadata.remove_all_attached_pictures();
+    /// assert!(metadata.attached_pictures().is_empty())
+    /// ```
+    pub fn remove_all_attached_pictures(&mut self){
+        self.tag.remove_all_attached_pictures()
+    }
     /// Returns the song artist (TPE1)
     /// 
     /// # Examples
@@ -119,7 +132,17 @@ impl Metadata {
     pub fn set_artist(&mut self, name : String) {
         self.tag.set_artist(name)
     } 
-
+    /// Revome the song artist (TPE1)
+    /// 
+    /// # Examples
+    /// ```
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// assert!(metadata.artist().is_some());
+    /// metadata.remove_artist();
+    /// assert!(metadata.artist().is_none());
+    /// 
+    /// ```
     pub fn remove_artist(&mut self) {
         self.tag.remove_artist()
     }
@@ -148,9 +171,22 @@ impl Metadata {
     pub fn set_album_artist(&mut self, artist : String) {
         self.tag.set_album_artist(artist)
     }
-
+    /// Remove the album artist (TPE2)
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// assert!(metadata.album_artist().is_some());
+    /// metadata.remove_album_artist();
+    /// assert!(metadata.album_artist().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_album_artist(&mut self){
-        self.tag.remove_artist()
+        self.tag.remove_album_artist()
     }
     /// Returns the album name (TABL)
     /// 
@@ -175,7 +211,20 @@ impl Metadata {
     pub fn set_album(&mut self, album: String) {
         self.tag.set_album(album)
     }
-
+    /// Remove the album  (TALB)
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// assert!(metadata.album().is_some());
+    /// metadata.remove_album();
+    /// assert!(metadata.album().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_album(&mut self){
         self.tag.remove_album()
     }
@@ -202,7 +251,20 @@ impl Metadata {
     pub fn set_genre(&mut self, genre: String) {
         self.tag.set_genre(genre)
     }
-
+    /// Remove the genre (TCON)
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// assert!(metadata.genre().is_some());
+    /// metadata.remove_genre();
+    /// assert!(metadata.genre().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_genre(&mut self){
         self.tag.remove_genre()
     }
@@ -231,6 +293,19 @@ impl Metadata {
         self.tag.set_publisher(publisher)
     }
 
+     /// Remove the publisher (TPUB)
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_publisher();
+    /// assert!(metadata.publisher().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_publisher(&mut self){
         self.tag.remove_publisher()
     }
@@ -258,7 +333,19 @@ impl Metadata {
     pub fn set_bpm(&mut self, bpm : u16){
         self.tag.set_bpm(bpm)
     }
-
+    /// Remove the track's BPM (TBPM)
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_bpm();
+    /// assert!(metadata.bpm().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_bpm(&mut self){
         self.tag.remove_bpm()
     }
@@ -269,6 +356,19 @@ impl Metadata {
     pub fn date(&self) -> Option<String> {
         self.tag.date()
     }
+    /// Remove the date (TDAT)
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_date();
+    /// assert!(metadata.date().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_date(&mut self){
         self.tag.remove_date()
     }
@@ -278,6 +378,19 @@ impl Metadata {
     pub fn set_encoder(&mut self, encoder : String){
         self.tag.set_encoder(encoder)
     }
+    /// Remove the encoder (TENC)
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_encoder();
+    /// assert!(metadata.encoded_by().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_encoder(&mut self){
         self.tag.remove_encoder()
     }
@@ -287,6 +400,19 @@ impl Metadata {
     pub fn time(&self) -> Option<String> {
         self.tag.time()
     }
+    /// Remove the tracl's time recording (TIME)
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_time();
+    /// assert!(metadata.time().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_time(&mut self){
         self.tag.remove_time()
     }
@@ -296,12 +422,38 @@ impl Metadata {
     pub fn set_title(&mut self, title : String){
         self.tag.set_title(title)
     }
+    /// Remove the title (TIT2)
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_title();
+    /// assert!(metadata.title().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_title(&mut self){
         self.tag.remove_title()
     }
     pub fn music_len(&self) -> Option<usize> {
         self.tag.music_len()
     }
+    /// Remove the music's length (TLEN)
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_encoder();
+    /// assert!(metadata.encoded_by().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_music_len(&mut self){
         self.tag.remove_music_len()
     }
@@ -311,6 +463,19 @@ impl Metadata {
     pub fn set_year(&mut self, year: i16){
         self.tag.set_year(year)
     }
+    /// Remove the year (TYER)
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_year();
+    /// assert!(metadata.year().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_year(&mut self){
         self.tag.remove_year()
     }
@@ -320,6 +485,19 @@ impl Metadata {
     pub fn set_track_position(&mut self, track_pos: u16, out_of: Option<u16>){
         self.tag.set_track_position(track_pos, out_of)
     }
+    /// Remove the track position in the album (TRCK)
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_track_position();
+    /// assert!(metadata.track_position().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_track_position(&mut self){
         self.tag.remove_track_position()
     }
@@ -329,6 +507,19 @@ impl Metadata {
     pub fn set_album_part(&mut self, album_part : u16, out_of: Option<u16> ){
         self.tag.set_album_part(album_part, out_of)
     }
+    /// Remove the track's disc position (TPOS)
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// 
+    /// use tag_editor::metadata::Metadata;
+    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// metadata.remove_album_part();
+    /// assert!(metadata.album_part().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_album_part(&mut self){
         self.tag.remove_album_part()
     }

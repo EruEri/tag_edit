@@ -29,6 +29,11 @@ impl Tag {
             Self::ID3(t) => t.get_attached_picture()
         }
     }
+    pub fn remove_all_attached_pictures(&mut self){
+        match self {
+            Self::ID3(tag) => tag.remove_frames(&APIC)
+        }
+    }
     pub fn artist(&self) -> Option<String> {
         match self {
             Self::ID3(tag ) => tag.get_text_from_text_frame(&TEXTFRAME(TPE1))
@@ -42,7 +47,7 @@ impl Tag {
 
     pub fn remove_artist(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TPE1)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TPE1)),
         }
     }
     
@@ -59,7 +64,7 @@ impl Tag {
 
     pub fn remove_album_artist(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TPE2)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TPE2)),
         }
     }
     
@@ -76,7 +81,7 @@ impl Tag {
 
     pub fn remove_album(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TALB)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TALB)),
         }
     }
     
@@ -93,7 +98,7 @@ impl Tag {
 
     pub fn remove_genre(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TCON)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TCON)),
         }
     }
     pub fn publisher(&self) -> Option<String> {
@@ -108,7 +113,7 @@ impl Tag {
     }
     pub fn remove_publisher(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TPUB)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TPUB)),
         }
     }
     pub fn bpm(&self) -> Option<String> {
@@ -124,7 +129,7 @@ impl Tag {
 
     pub fn remove_bpm(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TBPM)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TBPM)),
         }
     }
     pub fn composers(&self) -> Option<String> {
@@ -139,7 +144,7 @@ impl Tag {
     }
     pub fn remove_composers(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TCOM)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TCOM)),
         }
     }
     pub fn copyright(&self) -> Option<String> {
@@ -155,7 +160,7 @@ impl Tag {
 
     pub fn remove_date(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TDAT)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TDAT)),
         }
     }
     pub fn encoded_by(&self) -> Option<String> {
@@ -170,7 +175,7 @@ impl Tag {
     }
     pub fn remove_encoder(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TENC)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TENC)),
         }
     }
     pub fn file_type(&self) -> Option<String> {
@@ -185,7 +190,7 @@ impl Tag {
     }
     pub fn remove_time(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TIME)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TIME)),
         }
     }
     pub fn title(&self) -> Option<String> {
@@ -200,7 +205,7 @@ impl Tag {
     }
     pub fn remove_title(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TIT2)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TIT2)),
         }
     }
     pub fn music_len(&self) -> Option<usize>{
@@ -211,7 +216,7 @@ impl Tag {
     }
     pub fn remove_music_len(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TLEN)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TLEN)),
         }
     }
     pub fn year(&self) -> Option<i16>{
@@ -227,7 +232,7 @@ impl Tag {
     }
     pub fn remove_year(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TYER)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TYER)),
         }
     }
     pub fn track_position(&self) -> Option<String> {
@@ -248,7 +253,7 @@ impl Tag {
     }
     pub fn remove_track_position(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TRCK)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TRCK)),
         }
     }
     pub fn album_part(&self) -> Option<String> {
@@ -269,7 +274,7 @@ impl Tag {
     }
     pub fn remove_album_part(&mut self) {
         match self {
-            Tag::ID3(tag) => tag.remove_text_frame(&TEXTFRAME(TPOS)),
+            Tag::ID3(tag) => tag.remove_frames(&TEXTFRAME(TPOS)),
         }
     }
     pub fn lyrics(&self) -> Option<Vec<String>> {
