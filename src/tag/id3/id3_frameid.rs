@@ -178,6 +178,7 @@ impl ID3FRAMEID {
     }
 }
 
+/// Text frame Code
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ID3TEXTFRAMEID {
     /// TALB Album/Movie/Show title

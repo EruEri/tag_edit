@@ -9,7 +9,7 @@
 //! 
 //! 
 //! ```no_run
-//! use tag_editor::metadata::Metadata;
+//! use tag_editor::Metadata;
 //! 
 //! 
 //! let mut metadata = Metadata::from_path("file_test/1-01 Dark seeks light.mp3").unwrap();
@@ -28,13 +28,30 @@
 //! ```
 //! 
 //! 
+//! Create a tag and replace an existing tag
+//! 
+//! ```
+//! let mut tag_builder = ID3TagBuilder::new()
+//! tag_builder
+//! .set_artist("An artist")
+//! .set_album("An album")
+//! .add_text_frame(ID3TEXTFRAMEID::TIT2, "A title")
+//! .replace_tag("file_path")
+//! ```
+//! 
 //! 
 
+pub use crate::id3_tag_builder::ID3TagBuilder;
+pub use crate::metadata::Metadata;
+pub use crate::tag_error::TagError;
+pub use crate::tag::id3::id3_frameid::ID3TEXTFRAMEID;
+pub use crate::tag::file_format::PictureFormat;
 
-pub mod metadata;
-pub mod tag_error;
-pub mod id3_tag_builder;
-pub mod tag;
+
+mod tag;
+mod id3_tag_builder;
+mod tag_error;
+mod metadata;
 mod util;
 
 

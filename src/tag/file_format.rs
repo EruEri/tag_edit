@@ -5,6 +5,7 @@ pub enum AudioFormat {
     OTHER
 }
 
+/// Picture file format
 #[derive(Clone, Copy)]
 pub enum PictureFormat {
     PNG,
