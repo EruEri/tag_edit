@@ -62,6 +62,19 @@ impl ID3TAG {
         Ok (tag)
     }
 
+    pub (crate) fn new_empty_tag() -> Self {
+        let padding_size = 10_000;
+        Self {
+            _identifier : "ID3".into(),
+            major_version: 3,
+            _minor_version: 0,
+            size : padding_size + 10,
+            _flags_header : vec![],
+            frames: vec![],
+            padding : padding_size as i32
+        }
+    }
+
     pub(crate) fn as_bytes(&self) -> Vec<u8> {
         let mut bytes = vec![];
 

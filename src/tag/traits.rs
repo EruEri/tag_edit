@@ -18,7 +18,7 @@ pub(super) trait FrameSize {
 pub(crate) trait RawSize {
     /// Return the footprint of the struct
     /// For the Vec<Items> :
-    /// raw_size = sizeof Item * Vector's lenght
+    /// raw_size = sizeof Item * Vector's length
     fn raw_size(&self) -> usize;
 
     fn raw_bytes(&self) -> Vec<u8>;

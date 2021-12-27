@@ -18,7 +18,7 @@ impl Tag {
         }
     }
 
-    pub(crate) fn get_size(&self) -> u32 {
+    pub(crate) fn _get_size(&self) -> u32 {
         match self {
             Self::ID3(tag) => tag.size()
         }

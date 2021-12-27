@@ -1,4 +1,6 @@
-use crate::util::function::LSBYTE_MASK;
+use std::io::Error;
+
+use crate::{util::function::LSBYTE_MASK, tag_error::TagError};
 
 use super::{traits::{SliceConvert, StringConvert, SplitUF8, SplitUF16, ToBytes, SplitString, ToU32, ToU16}, reading_mode::{TextEncoding, NULL_TERMINATE}};
 
@@ -28,6 +30,18 @@ impl ToU16 for Vec<u8> {
         }
     }
 }
+
+impl From<Error> for TagError {
+    fn from(e: Error) -> Self {
+        Self::IoError(e)
+    }
+}
+
+// impl Into<TagError> for Error {
+//     fn into(self) -> TagError {
+//         TagError::IoError(self)
+//     }
+// }
 
 
 impl ToBytes for String {

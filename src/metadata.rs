@@ -1,10 +1,10 @@
-//! Library's entry point.
 //! Allow to read and write Tag metadata from MP3 and FLAC files
 
 use std::convert::TryInto;
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Error, Write};
 use std::string::FromUtf8Error;
+use crate::id3_tag_builder::ID3TagBuilder;
 use crate::tag::file_format::{AudioFormat, PictureFormat};
 use crate::tag::file_format::AudioFormat::{FLAC, MP3, OTHER};
 use crate::tag::id3::code::picture_code::picture_type::PictureType;
@@ -30,7 +30,7 @@ fn is_flac(s: &String) -> bool{
     s == "fLaC"
 }
 
-fn read_type_audio_file(file: &mut File) -> Result<(AudioFormat, usize), FromUtf8Error> {
+pub (crate) fn read_type_audio_file(file: &mut File) -> Result<(AudioFormat, usize), FromUtf8Error> {
     let mut buffer = [0,0,0,0,0,0,0,0,0,0];
     let _ = file.read(&mut buffer);
     //let flac = String::from_utf8(buffer[0..4].into_vec());
@@ -54,7 +54,7 @@ fn read_type_audio_file(file: &mut File) -> Result<(AudioFormat, usize), FromUtf
 impl Metadata {
     
     /// Retrieves the tag metadata from a file
-    pub fn new(file_path: &str) -> Option<Self>{
+    pub fn from_path(file_path: &str) -> Option<Self>{
         let mut file = OpenOptions::new().create(false).read(true).write(true).open(file_path).ok()?;
         let (audio_type, size) = read_type_audio_file(&mut file).ok()?;
         match audio_type {
@@ -77,6 +77,21 @@ impl Metadata {
             OTHER => todo!("Other not implemented"),
         }
     }
+    /// Consume the `ID3TagBuilder` to create a Metadata
+    /// 
+    /// See [ID3TagBuilder] for the implementation
+    /// 
+    /// Arguments
+    /// * `tag_builder` : 
+    /// * `out_file` : path to the default output file
+    pub fn from_id3_tag_builder(tag_builder: ID3TagBuilder, out_file : &str) -> Self {
+        Self {
+            filename: out_file.to_string(),
+            _file_type: MP3,
+            tag: Tag::ID3(tag_builder.tag()),
+            music_data: vec![]
+        }
+    }
 
     /// Overwrite the tag in the origin file
     pub fn overwrite_tag(&self) -> Result<(), Error>{
@@ -91,10 +106,6 @@ impl Metadata {
         let _ = file.write(self.tag.as_bytes().as_slice())?;
         let _ = file.write(self.music_data.as_slice())?;
         Ok(())
-    }
-
-    pub (crate) fn tag(&self) -> &Tag {
-        &self.tag
     }
 
     /// Retrieves all the pictures contained in the tag. An empty `Vec`
@@ -137,7 +148,7 @@ impl Metadata {
     /// # Examples
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert!(!metadata.attached_pictures().is_empty());
     /// metadata.remove_all_attached_pictures();
     /// assert!(metadata.attached_pictures().is_empty())
@@ -150,7 +161,7 @@ impl Metadata {
     /// # Examples
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert_eq!(metadata.artist(), Some("Maon Kurosaki".to_string()));
     /// 
     /// 
@@ -163,7 +174,7 @@ impl Metadata {
     /// # Examples
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_artist("Song performer".into());
     /// assert_eq!(metadata.artist(), Some("Song performer".to_string()));
     /// 
@@ -176,7 +187,7 @@ impl Metadata {
     /// # Examples
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert!(metadata.artist().is_some());
     /// metadata.remove_artist();
     /// assert!(metadata.artist().is_none());
@@ -190,7 +201,7 @@ impl Metadata {
     /// # Examples
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert_eq!(metadata.album_artist().unwrap(), "\u{feff}黒崎真音\u{0}".to_string());
     /// 
     /// ```
@@ -202,7 +213,7 @@ impl Metadata {
     /// # Examples
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_artist("Artist album".to_string());
     /// assert_eq!(metadata.artist().unwrap(), "Artist album".to_string());
     /// 
@@ -217,7 +228,7 @@ impl Metadata {
     /// ```
     /// 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert!(metadata.album_artist().is_some());
     /// metadata.remove_album_artist();
     /// assert!(metadata.album_artist().is_none());
@@ -232,7 +243,7 @@ impl Metadata {
     /// # Example 
     /// ``` 
     /// use tag_editor::metadata::Metadata;
-    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert_eq!(metadata.album().unwrap(), "Butterfly Effect".to_string())
     /// 
     /// 
@@ -245,7 +256,7 @@ impl Metadata {
     /// # Examples 
     /// ``` 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_album("An album Name".into());
     /// assert_eq!(metadata.album().unwrap(), "An album Name".to_string());
     /// ```
@@ -259,7 +270,7 @@ impl Metadata {
     /// ```
     /// 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert!(metadata.album().is_some());
     /// metadata.remove_album();
     /// assert!(metadata.album().is_none());
@@ -274,18 +285,18 @@ impl Metadata {
     /// # Examples 
     /// ``` 
     /// use tag_editor::metadata::Metadata;
-    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert_eq!(metadata.genre().unwrap(), "J-Pop".to_string());
     /// ```
     pub fn genre(&self) -> Option<String> {
         self.tag.genre()
     }
-    /// Returns the genre (TCON)
+    /// Set the genre (TCON)
     /// 
     /// # Examples 
     /// ``` 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_genre("A Genre".into());
     /// assert_eq!(metadata.genre().unwrap(), "A Genre".to_string());
     /// ```
@@ -299,7 +310,7 @@ impl Metadata {
     /// ```
     /// 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert!(metadata.genre().is_some());
     /// metadata.remove_genre();
     /// assert!(metadata.genre().is_none());
@@ -314,7 +325,7 @@ impl Metadata {
     /// # Examples 
     /// ``` 
     /// use tag_editor::metadata::Metadata;
-    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// let publisher = metadata.publisher();
     /// assert!(publisher.is_none());
     /// ```
@@ -326,7 +337,7 @@ impl Metadata {
     /// # Examples 
     /// ``` 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_publisher("Some Publisher".into());
     /// assert!(metadata.publisher().is_some());
     /// ```
@@ -341,7 +352,7 @@ impl Metadata {
     /// ```
     /// 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_publisher();
     /// assert!(metadata.publisher().is_none());
     /// 
@@ -355,7 +366,7 @@ impl Metadata {
     /// # Examples 
     /// ``` 
     /// use tag_editor::metadata::Metadata;
-    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// let bpm = metadata.bpm();
     /// assert!(bpm.is_none())
     /// 
@@ -369,7 +380,7 @@ impl Metadata {
     /// # Examples 
     /// ``` 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_bpm(100);
     /// assert_eq!(metadata.bpm().unwrap().parse::<u16>().unwrap(), 100)
     /// 
@@ -385,7 +396,7 @@ impl Metadata {
     /// ```
     /// 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_bpm();
     /// assert!(metadata.bpm().is_none());
     /// 
@@ -403,7 +414,7 @@ impl Metadata {
     /// # Examples 
     /// ``` 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_composers("A composers".into());
     /// assert_eq!(metadata.composers().unwrap(), "A composers".to_string());
     /// ```
@@ -414,7 +425,7 @@ impl Metadata {
     /// # Examples 
     /// ``` 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_composers("A composers".into());
     /// assert!(metadata.composers().is_some());
     /// metadata.remove_composers();
@@ -438,7 +449,7 @@ impl Metadata {
     /// ```
     /// 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_date();
     /// assert!(metadata.date().is_none());
     /// 
@@ -457,7 +468,7 @@ impl Metadata {
     /// # Examples
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_encoder("An encoder".to_string());
     /// assert_eq!(metadata.encoded_by().unwrap(), "An encoder".to_string());
     /// 
@@ -472,7 +483,7 @@ impl Metadata {
     /// ```
     /// 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_encoder();
     /// assert!(metadata.encoded_by().is_none());
     /// 
@@ -495,7 +506,7 @@ impl Metadata {
     /// ```
     /// 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_time();
     /// assert!(metadata.time().is_none());
     /// 
@@ -509,7 +520,7 @@ impl Metadata {
     /// # Examples
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert_eq!(metadata.title(), Some("VANISHING POINT".to_string()));
     /// 
     /// 
@@ -522,7 +533,7 @@ impl Metadata {
     /// # Examples
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_title("A title".to_string());
     /// assert_eq!(metadata.title().unwrap(), "A title".to_string());
     /// 
@@ -537,7 +548,7 @@ impl Metadata {
     /// ```
     /// 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_title();
     /// assert!(metadata.title().is_none());
     /// 
@@ -557,7 +568,7 @@ impl Metadata {
     /// ```
     /// 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_music_len();
     /// assert!(metadata.music_len().is_none());
     /// 
@@ -571,7 +582,7 @@ impl Metadata {
     /// # Example 
     /// ``` 
     /// use tag_editor::metadata::Metadata;
-    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert_eq!(metadata.year().unwrap(), 2011)
     /// 
     /// 
@@ -584,7 +595,7 @@ impl Metadata {
     /// # Examples
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_year(2021);
     /// assert_eq!(metadata.year().unwrap(), 2021);
     /// 
@@ -599,7 +610,7 @@ impl Metadata {
     /// ```
     /// 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_year();
     /// assert!(metadata.year().is_none());
     /// 
@@ -613,7 +624,7 @@ impl Metadata {
     /// # Example 
     /// ``` 
     /// use tag_editor::metadata::Metadata;
-    /// let metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// assert_eq!(metadata.track_position().unwrap(), "2".to_string())
     /// 
     /// 
@@ -630,7 +641,7 @@ impl Metadata {
     /// # Examples
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_track_position(1, None);
     /// assert_eq!(metadata.track_position().unwrap(), "1".to_string());
     /// metadata.set_track_position(1, Some(10));
@@ -648,7 +659,7 @@ impl Metadata {
     /// ```
     /// 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_track_position();
     /// assert!(metadata.track_position().is_none());
     /// 
@@ -670,7 +681,7 @@ impl Metadata {
     /// # Examples
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.set_disc(2, None);
     /// assert_eq!(metadata.disc().unwrap(), "2".to_string());
     /// metadata.set_disc(2, Some(20));
@@ -687,7 +698,7 @@ impl Metadata {
     /// ```
     /// 
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_disc();
     /// assert!(metadata.disc().is_none());
     /// 
@@ -712,7 +723,7 @@ impl Metadata {
     /// # Examples 
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_all_lyrics();
     /// metadata.add_lyrics("eng".to_string(), None, "Some Lyrics".into()).unwrap();
     /// assert_eq!(metadata.lyrics().first().unwrap(), &"Some Lyrics".to_string())
@@ -726,7 +737,7 @@ impl Metadata {
     /// # Example 
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_all_lyrics();
     /// assert!(metadata.lyrics().is_empty())
     /// 
@@ -754,7 +765,7 @@ impl Metadata {
     /// # Examples 
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_all_comments();
     /// metadata.add_comment("eng".to_string(), None, "A random comment".into()).unwrap();
     /// assert_eq!(metadata.comments().first().unwrap(), &"A random comment".to_string())
@@ -768,7 +779,7 @@ impl Metadata {
     /// # Example 
     /// ```
     /// use tag_editor::metadata::Metadata;
-    /// let mut metadata = Metadata::new("file_test/02 VANISHING POINT.mp3").unwrap();
+    /// let mut metadata = Metadata::from_path("file_test/02 VANISHING POINT.mp3").unwrap();
     /// metadata.remove_all_comments();
     /// assert!(metadata.comments().is_empty())
     /// 
