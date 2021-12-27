@@ -2,7 +2,8 @@
 name = "tag_edit"
 version = "0.1.0"
 edition = "2018"
-
+author = ["EruEri <ndiayeyves@gmail.com>"]
+readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
