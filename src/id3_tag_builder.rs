@@ -5,6 +5,7 @@ use std::{
 };
 
 use crate::tag::{id3::id3_frameid::ID3TEXTFRAMEID::*, file_format::AudioFormat};
+
 use crate::{
     metadata::read_type_audio_file,
     tag::{
@@ -40,8 +41,8 @@ impl ID3TagBuilder {
     ///
     /// # Examples
     /// ```
-    /// use tag_editor::id3_tag_builder::ID3TagBuilder;
-    /// use tag_editor::tag::id3::id3_frameid::ID3TEXTFRAMEID;
+    /// use tag_edit::ID3TagBuilder;
+    /// use tag_edit::ID3TEXTFRAMEID;
     /// let mut tag_builder = ID3TagBuilder::new();
     /// tag_builder
     /// .add_text_frame(ID3TEXTFRAMEID::TIT2, "A title")

@@ -9,7 +9,7 @@
 //! 
 //! 
 //! ```no_run
-//! use tag_editor::Metadata;
+//! use tag_edit::Metadata;
 //! 
 //! 
 //! let mut metadata = Metadata::from_path("file_test/1-01 Dark seeks light.mp3").unwrap();
@@ -25,18 +25,27 @@
 //! metadata.set_album("An album".into());
 //! 
 //! let _ = metadata.overwrite_tag();
+//! 
+//! 
+//! 
 //! ```
 //! 
 //! 
 //! Create a tag and replace an existing tag
 //! 
 //! ```
-//! let mut tag_builder = ID3TagBuilder::new()
+//! use tag_edit::ID3TagBuilder;
+//! use tag_edit::ID3TEXTFRAMEID;
+//! 
+//! let mut tag_builder = ID3TagBuilder::new();
 //! tag_builder
 //! .set_artist("An artist")
 //! .set_album("An album")
 //! .add_text_frame(ID3TEXTFRAMEID::TIT2, "A title")
-//! .replace_tag("file_path")
+//! .replace_tag("file_path");
+//! 
+//! 
+//! 
 //! ```
 //! 
 //! 
@@ -48,11 +57,11 @@ pub use crate::tag::id3::id3_frameid::ID3TEXTFRAMEID;
 pub use crate::tag::file_format::PictureFormat;
 
 
-mod tag;
-mod id3_tag_builder;
-mod tag_error;
-mod metadata;
-mod util;
+pub (crate) mod tag;
+pub (crate) mod id3_tag_builder;
+pub (crate) mod tag_error;
+pub (crate) mod metadata;
+pub (crate) mod util;
 
 
 
@@ -65,6 +74,7 @@ mod test {
     use std::{io::{Error, Read, Write}, fs::OpenOptions};
 
     use crate::{metadata::Metadata, id3_tag_builder::ID3TagBuilder};
+    
 
     #[test]
     fn it_work(){
@@ -106,10 +116,10 @@ mod test {
         .set_title("刹那の果実")
         .set_artist("黒崎真音")
         .set_album("Mystical Flower")
-        .add_text_frame(crate::tag::id3::id3_frameid::ID3TEXTFRAMEID::TYER, "2015")
+        .add_text_frame(crate::ID3TEXTFRAMEID::TYER, "2015")
         .set_disc(1, Some(1))
         .set_track_position(2, Some(15))
-        .add_picture_from_file(IMAGE_PATH, crate::tag::file_format::PictureFormat::JPEG, None, None).unwrap()
+        .add_picture_from_file(IMAGE_PATH,  crate::PictureFormat::JPEG, None, None).unwrap()
         .replace_tag(OUTPUT_TEST);
         if let Err(e) = result {
             panic!("an error occured : {:?}", e)
