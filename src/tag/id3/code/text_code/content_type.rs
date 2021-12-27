@@ -13,6 +13,7 @@ pub(crate) enum TextContent {
 }
 
 impl TextContent {
+    #[allow(dead_code)]
     pub(crate) fn from_raw_value(value : u8) -> Option<Self> {
         match value {
             0 => Some(Self::Other),
