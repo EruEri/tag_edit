@@ -2,9 +2,11 @@ use super::reading_mode::TextEncoding;
 
 pub trait ToU32 {
     fn u32_from_be(&self) -> Option<u32>;
+    fn u32_from_le(&self) -> Option<u32>;
 }
 pub trait ToU16 {
     fn u16_from_be(&self) -> Option<u16>;
+    fn u16_from_le(&self) -> Option<u16>;
 }
 
 pub(crate) trait TagSize {

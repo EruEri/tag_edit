@@ -26,6 +26,9 @@ pub enum PictureType {
 
 impl PictureType {
     pub(crate) fn from_raw_value(value : u8) -> Option<Self>{
+        Self::from_raw_u32(value as u32)
+    }
+    pub (crate) fn from_raw_u32(value : u32) -> Option<Self> {
         match value {
             0 => Some(Self::Other),
             1 => Some (Self::FileIcon),

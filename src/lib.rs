@@ -12,7 +12,7 @@
 //! use tag_edit::Metadata;
 //! 
 //! 
-//! let mut metadata = Metadata::from_path("file_test/1-01 Dark seeks light.mp3").unwrap();
+//! let mut metadata = Metadata::from_path("file_test/mp3/1-01 Dark seeks light.mp3").unwrap();
 //! if let Some(_artist) = metadata.artist(){
 //!     // do something
 //! }
@@ -55,6 +55,7 @@ pub use crate::metadata::Metadata;
 pub use crate::tag_error::TagError;
 pub use crate::tag::id3::id3_frameid::ID3TEXTFRAMEID;
 pub use crate::tag::file_format::PictureFormat;
+pub use crate::tag::flac::flac_tag::FlacTag;
 
 
 pub (crate) mod tag;
@@ -68,12 +69,14 @@ pub (crate) mod util;
 
 #[cfg(test)]
 mod test {
-    const INPUT_FILE : &'static str = "file_test/02 VANISHING POINT.mp3";
-    const OUTPUT_TEST : &'static str = "file_test/o.mp3";
-    const IMAGE_PATH : &'static str = "file_test/mysfloreg.jpeg";
+    const INPUT_FILE : &'static str = "file_test/mp3/02 VANISHING POINT.mp3";
+    const OUTPUT_TEST : &'static str = "file_test/output/o.mp3";
+    const IMAGE_PATH : &'static str = "file_test/image/mysfloreg.jpeg";
+    const FLAC_FILE : &'static str = "file_test/flac/02. CHAIN.flac";
+    
     use std::{io::{Error, Read, Write}, fs::OpenOptions};
 
-    use crate::{metadata::Metadata, id3_tag_builder::ID3TagBuilder};
+    use crate::{metadata::Metadata, id3_tag_builder::ID3TagBuilder, FlacTag};
     
 
     #[test]
@@ -108,7 +111,7 @@ mod test {
     #[test]
     fn tag_builder() -> Result<(), Error>{
         let mut buff_data = vec![];
-        let mut source = OpenOptions::new().create(false).read(true).open("file_test/01 Setsuna no Kajitsu.mp3")?;
+        let mut source = OpenOptions::new().create(false).read(true).open("file_test/mp3/01 Setsuna no Kajitsu.mp3")?;
         let _ = source.read_to_end(&mut buff_data)?;
         let mut out = OpenOptions::new().create(true).truncate(true).write(true).open(OUTPUT_TEST)?;
         out.write(&mut buff_data)?;
@@ -129,6 +132,15 @@ mod test {
         assert_eq!(metadata.year(), Some(2015));
         assert_eq!(metadata.disc(), Some("1/1".to_string()));
         Ok(())
+    }
+
+    #[test]
+    fn flac_read(){
+        if let Some(flactag) = FlacTag::from_path(FLAC_FILE) {
+            assert!(flactag.artist().is_some());
+        }else {
+            panic!("Not created")
+        }
     }
     
 }

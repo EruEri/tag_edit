@@ -12,7 +12,7 @@ Currently only ID3.v2.3 supported
 use tag_edit::Metadata;
 
 
-let mut metadata = Metadata::from_path("file_test/1-01 Dark seeks light.mp3").unwrap();
+let mut metadata = Metadata::from_path("file_test/mp3/1-01 Dark seeks light.mp3").unwrap();
 if let Some(_artist) = metadata.artist(){
     // do something
 }

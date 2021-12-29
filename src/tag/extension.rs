@@ -17,6 +17,18 @@ impl ToU32 for Vec<u8> {
             )
         }
     }
+
+    fn u32_from_le(&self) -> Option<u32> {
+        if self.len() < 3 {
+            None
+        }else {
+            Some(
+                u32::from_be_bytes([self.get(3).unwrap().clone(), self.get(2).unwrap().clone(),
+                self.get(1).unwrap().clone(), self.get(0).unwrap().clone()
+                ])
+            )
+        }
+    }
 }
 
 impl ToU16 for Vec<u8> {
@@ -26,6 +38,15 @@ impl ToU16 for Vec<u8> {
         }else {
             Some(
                 u16::from_be_bytes([self.get(0).unwrap().clone(), self.get(1).unwrap().clone()])
+            )
+        }
+    }
+    fn u16_from_le(&self) -> Option<u16> {
+        if self.len() < 1 {
+            None
+        }else {
+            Some(
+                u16::from_be_bytes([self.get(1).unwrap().clone(), self.get(0).unwrap().clone()])
             )
         }
     }
