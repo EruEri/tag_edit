@@ -1,6 +1,6 @@
 use std::{fs::OpenOptions, io::Read};
 
-use crate::tag::traits::StringConvert;
+use crate::util::traits::StringConvert;
 
 use super::flac_metadata_block::FlacMetadataBlock;
 
@@ -39,6 +39,24 @@ impl FlacTag {
 }
 
 impl FlacTag {
+
+    pub fn title(&self) -> Option<String> {
+        Some(
+            self.metadata_blocks
+                .iter()
+                .filter_map(|flac_block  | {
+                    match flac_block.as_vorbis_comments_frame() {
+                        None => None,
+                        Some(vorbis) => {
+                           vorbis.get_title()
+                        }
+                    }
+                })
+                .collect::<Vec<String>>()
+                .join(", ")
+            )
+    }
+
     pub fn artist(&self) -> Option<String> {
         Some(
             self.metadata_blocks
@@ -55,4 +73,41 @@ impl FlacTag {
                 .join(", ")
             )
     }
+
+    pub fn album(&self) -> Option<String> {
+        Some(
+            self.metadata_blocks
+                .iter()
+                .filter_map(|flac_block  | {
+                    match flac_block.as_vorbis_comments_frame() {
+                        None => None,
+                        Some(vorbis) => {
+                           vorbis.get_album()
+                        }
+                    }
+                })
+                .collect::<Vec<String>>()
+                .join(", ")
+            )
+    }
+
+    pub fn album_artist(&self) -> Option<String> {
+        Some(
+            self.metadata_blocks
+                .iter()
+                .filter_map(|flac_block  | {
+                    match flac_block.as_vorbis_comments_frame() {
+                        None => None,
+                        Some(vorbis) => {
+                           vorbis.get_album_artist()
+                        }
+                    }
+                })
+                .collect::<Vec<String>>()
+                .join(", ")
+            )
+    }
+    
+
+
 }

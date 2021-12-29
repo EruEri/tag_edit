@@ -1,4 +1,4 @@
-use crate::{util::number::u24, tag::{id3::code::picture_code::{picture_type::PictureType, self}, traits::{ToU32, StringConvert, ToU16}}};
+use crate::{util::number::u24, util::traits::{ToU32, StringConvert, ToU16}, id3::code::picture_code::picture_type::PictureType};
 use std::{fmt::Display, str::FromStr, collections::HashMap, convert::TryInto};
 
 use super::flac_metadata_block::FlacMetadataBlockType;
@@ -223,8 +223,20 @@ pub (crate) struct VorbisCommentBlock {
     comments : HashMap<String, String>
 }
 impl VorbisCommentBlock {
-    pub(crate) fn comments(&self) -> &HashMap<String, String> {
+    pub(crate) fn _comments(&self) -> &HashMap<String, String> {
         &self.comments
+    }
+
+    pub (crate) fn get_title(&self) -> Option<String> {
+        if let Some(title) = self.comments.get("TITLE"){
+            Some(title.clone())
+        }else if let Some(title) = self.comments.get("Title") {
+            Some(title.clone())
+        }else if let Some(title) = self.comments.get("title") {
+            Some(title.clone())
+        }else {
+            None
+        }
     }
 
     pub(crate) fn get_artist(&self) -> Option<String> {
@@ -238,6 +250,34 @@ impl VorbisCommentBlock {
             None
         }
     }
+
+    pub (crate) fn get_album(&self) -> Option<String> {
+        if let Some(album) = self.comments.get("ALBUM"){
+            Some(album.clone())
+        }else if let Some(album) = self.comments.get("Album") {
+            Some(album.clone())
+        }else if let Some(album) = self.comments.get("album") {
+            Some(album.clone())
+        }else {
+            None
+        }
+    }
+    
+    pub (crate) fn get_album_artist(&self) -> Option<String> {
+        if let Some(album_artist) = self.comments.get("ALBUMARTIST"){
+            Some(album_artist.clone())
+        }else if let Some(album_artist) = self.comments.get("AlbumArtist") {
+            Some(album_artist.clone())
+        }else if let Some(album_artist) = self.comments.get("Albumartist") {
+            Some(album_artist.clone())
+        }else if let Some(album_artist) = self.comments.get("albumartist") {
+            Some(album_artist.clone())
+        }else {
+            None
+        }
+    }
+
+
 }
 
 pub (crate) struct CueSheetBlock {

@@ -1,8 +1,8 @@
-use crate::tag::file_format::PictureFormat;
-use crate::tag::id3::id3_frame::ID3FRAME;
-use crate::tag::id3::id3_header_flag::ID3HeaderFLAG;
-use crate::tag::id3::id3_header_flag::ID3HeaderFLAG::{ExperimentalIndicator, ExtendedHeader, Unsynchronisation};
-use crate::tag::traits::{FrameSize, TagSize};
+use crate::util::file_format::PictureFormat;
+use crate::id3::id3_frame::ID3FRAME;
+use crate::id3::id3_header_flag::ID3HeaderFLAG;
+use crate::id3::id3_header_flag::ID3HeaderFLAG::{ExperimentalIndicator, ExtendedHeader, Unsynchronisation};
+use crate::util::traits::{FrameSize, TagSize};
 use crate::tag_error::TagError;
 use crate::util::function::{unsynchsafe, synchsafe};
 use super::code::picture_code::picture_type::PictureType;

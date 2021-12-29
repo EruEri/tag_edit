@@ -1,11 +1,11 @@
 
-use crate::tag::id3::id3_tag::ID3TAG;
+use crate::id3::id3_tag::ID3TAG;
 use crate::tag_error::TagError;
 use super::file_format::PictureFormat;
-use super::id3::code::picture_code::picture_type::PictureType;
+use crate::id3::code::picture_code::picture_type::PictureType;
 use super::traits::TagSize;
-use crate::tag::id3::id3_frameid::ID3FRAMEID::*;
-use crate::tag::id3::id3_frameid::ID3TEXTFRAMEID::*;
+use crate::id3::id3_frameid::ID3FRAMEID::*;
+use crate::id3::id3_frameid::ID3TEXTFRAMEID::*;
 
 pub enum Tag {
     ID3(ID3TAG)

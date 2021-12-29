@@ -53,16 +53,17 @@
 pub use crate::id3_tag_builder::ID3TagBuilder;
 pub use crate::metadata::Metadata;
 pub use crate::tag_error::TagError;
-pub use crate::tag::id3::id3_frameid::ID3TEXTFRAMEID;
-pub use crate::tag::file_format::PictureFormat;
-pub use crate::tag::flac::flac_tag::FlacTag;
+pub use crate::id3::id3_frameid::ID3TEXTFRAMEID;
+pub use crate::util::file_format::PictureFormat;
+pub use crate::flac::flac_tag::FlacTag;
 
 
-pub (crate) mod tag;
 pub (crate) mod id3_tag_builder;
+pub (crate) mod id3;
 pub (crate) mod tag_error;
 pub (crate) mod metadata;
 pub (crate) mod util;
+pub (crate) mod flac;
 
 
 
@@ -72,7 +73,7 @@ mod test {
     const INPUT_FILE : &'static str = "file_test/mp3/02 VANISHING POINT.mp3";
     const OUTPUT_TEST : &'static str = "file_test/output/o.mp3";
     const IMAGE_PATH : &'static str = "file_test/image/mysfloreg.jpeg";
-    const FLAC_FILE : &'static str = "file_test/flac/02. CHAIN.flac";
+    const FLAC_FILE : &'static str = "file_test/flac/02. believe in myself.flac";
     
     use std::{io::{Error, Read, Write}, fs::OpenOptions};
 
@@ -138,6 +139,7 @@ mod test {
     fn flac_read(){
         if let Some(flactag) = FlacTag::from_path(FLAC_FILE) {
             assert!(flactag.artist().is_some());
+            //assert_eq!(flactag.title(), Some("CHAIN".to_string()))
         }else {
             panic!("Not created")
         }

@@ -1,4 +1,4 @@
-use crate::tag::{traits::{RawSize, ToBytes, StringConvert, SplitString, ToU32, ToU16}, reading_mode::{TextEncoding, NULL_TERMINATE}, file_format::PictureFormat};
+use crate::util::{traits::{RawSize, ToBytes, StringConvert, SplitString, ToU32, ToU16}, reading_mode::{TextEncoding, NULL_TERMINATE}, file_format::PictureFormat};
 
 use super::{code::{event_timing_code::time_stamp_format::TimeStampFormat, picture_code::picture_type:: PictureType}, id3_frameid::ID3FRAMEID};
 use super::id3_frameid::ID3FRAMEID::*;

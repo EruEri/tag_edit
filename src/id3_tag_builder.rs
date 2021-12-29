@@ -4,17 +4,18 @@ use std::{
     io::{Error, Read, Write, Seek, SeekFrom},
 };
 
-use crate::tag::{id3::id3_frameid::ID3TEXTFRAMEID::*, file_format::AudioFormat};
+use crate::util::file_format::AudioFormat;
+
+use crate::id3::{
+    code::picture_code::picture_type::PictureType,
+    id3_frameid::{ID3FRAMEID, ID3TEXTFRAMEID, ID3TEXTFRAMEID::*},
+    id3_tag::ID3TAG,
+};
 
 use crate::{
     metadata::read_type_audio_file,
-    tag::{
+    util::{
         file_format::PictureFormat,
-        id3::{
-            code::picture_code::picture_type::PictureType,
-            id3_frameid::{ID3FRAMEID, ID3TEXTFRAMEID},
-            id3_tag::ID3TAG,
-        },
     },
     tag_error::TagError,
 };

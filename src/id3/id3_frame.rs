@@ -1,12 +1,12 @@
-use crate::tag::id3::id3_frame_value::FrameValue::NoValue;
+use crate::id3::id3_frame_value::FrameValue::NoValue;
 use std::convert::TryInto;
 use std::str::FromStr;
 
-use crate::tag::id3::id3_frameid::ID3FRAMEID;
-use crate::tag::id3::id3_header_flag::{ID3FRAMEHEADERFLAGSB1, ID3FRAMEHEADERFLAGSB2};
-use crate::tag::id3::id3_header_flag::ID3FRAMEHEADERFLAGSB1::*;
-use crate::tag::id3::id3_header_flag::ID3FRAMEHEADERFLAGSB2::*;
-use crate::tag::traits::{FrameSize, RawSize};
+use crate::id3::id3_frameid::ID3FRAMEID;
+use crate::id3::id3_header_flag::{ID3FRAMEHEADERFLAGSB1, ID3FRAMEHEADERFLAGSB2};
+use crate::id3::id3_header_flag::ID3FRAMEHEADERFLAGSB1::*;
+use crate::id3::id3_header_flag::ID3FRAMEHEADERFLAGSB2::*;
+use crate::util::traits::{FrameSize, RawSize};
 
 use super::id3_frame_value::{AttachedPictureFrame, CommentFrame, FrameValue, TextFrame, UnsyncLyricsFrame};
 

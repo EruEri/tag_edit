@@ -12,13 +12,13 @@ impl u24 {
         }
     }
 
-    pub (crate) fn from_le_bytes(s: [u8; 3]) -> Self {
+    /*pub (crate) fn from_le_bytes(s: [u8; 3]) -> Self {
         Self {
             n: u32::from_le_bytes([
                 s[0], s[1], s[2], 00 
             ])
         }
-    }
+    }*/
 
     pub (crate) fn to_be_bytes(&self) -> [u8; 3] {
         let bytes = self.n.to_be_bytes();

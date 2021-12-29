@@ -13,7 +13,7 @@ pub(crate) trait TagSize {
     fn size(&self) -> u32;
 }
 
-pub(super) trait FrameSize {
+pub(crate) trait FrameSize {
     fn total_size(&self) -> u32;
 }
 

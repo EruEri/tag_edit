@@ -5,13 +5,13 @@ use std::fs::{File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Error, Write};
 use std::string::FromUtf8Error;
 use crate::id3_tag_builder::ID3TagBuilder;
-use crate::tag::file_format::{AudioFormat, PictureFormat};
-use crate::tag::file_format::AudioFormat::{FLAC, MP3, OTHER};
-use crate::tag::id3::code::picture_code::picture_type::PictureType;
-use crate::tag::id3::id3_tag::ID3TAG;
-use crate::tag::tag::Tag;
+use crate::util::file_format::{AudioFormat, PictureFormat};
+use crate::util::file_format::AudioFormat::{FLAC, MP3, OTHER};
+use crate::id3::code::picture_code::picture_type::PictureType;
+use crate::id3::id3_tag::ID3TAG;
+use crate::util::tag::Tag;
 use crate::tag_error::TagError;
-use super::tag::id3::id3_header_flag::ID3HeaderFLAG;
+use super::id3::id3_header_flag::ID3HeaderFLAG;
 use super::util::function::unsynchsafe;
 
 /// Tag's wrapper making the abstraction of the Tag source file (MP3, FLAC)
