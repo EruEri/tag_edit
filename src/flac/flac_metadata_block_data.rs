@@ -27,14 +27,14 @@ pub (crate) enum ApplicationID  {
     SQEZ,
     TtWv,
     UITS,
-    aiff,
-    imag,
-    peem,
-    qfst,
-    riff,
-    tune,
-    xbat,
-    xmcd
+    Aiff,
+    Imag,
+    Peem,
+    Qfst,
+    Riff,
+    Tune,
+    Xbat,
+    Xmcd
 }
 
 impl FromStr for ApplicationID {
@@ -57,14 +57,14 @@ impl FromStr for ApplicationID {
             "SQEZ" => Ok(Self::SQEZ),
             "TtWv" => Ok(Self::TtWv),
             "UITS" => Ok(Self::UITS),
-            "aiff" => Ok(Self::aiff),
-            "imag" => Ok(Self::imag),
-            "peem" => Ok(Self::peem),
-            "qfst" => Ok(Self::qfst),
-            "riff" => Ok(Self::riff),
-            "tune" => Ok(Self::tune),
-            "xbat" => Ok(Self::xbat),
-            "xmcd" => Ok(Self::xmcd),
+            "aiff" => Ok(Self::Aiff),
+            "imag" => Ok(Self::Imag),
+            "peem" => Ok(Self::Peem),
+            "qfst" => Ok(Self::Qfst),
+            "riff" => Ok(Self::Riff),
+            "tune" => Ok(Self::Tune),
+            "xbat" => Ok(Self::Xbat),
+            "xmcd" => Ok(Self::Xmcd),
             _  => Err(())
         }
     }
@@ -87,14 +87,14 @@ impl Display for ApplicationID {
             Self::SQEZ => "SQEZ",
             Self::TtWv => "TtWv",
             Self::UITS => "UITS",
-            Self::aiff => "aiff",
-            Self::imag => "imag",
-            Self::peem => "peem",
-            Self::qfst => "qfst",
-            Self::riff => "riff",
-            Self::tune => "tune",
-            Self::xbat => "xbat",
-            Self::xmcd => "xmcd",
+            Self::Aiff => "aiff",
+            Self::Imag => "imag",
+            Self::Peem => "peem",
+            Self::Qfst => "qfst",
+            Self::Riff => "riff",
+            Self::Tune => "tune",
+            Self::Xbat => "xbat",
+            Self::Xmcd => "xmcd",
         };
         write!(f, "{}", s)
     }
@@ -277,6 +277,161 @@ impl VorbisCommentBlock {
         }
     }
 
+    pub (crate) fn get_genre(&self) -> Option<String> {
+        if let Some(genre) = self.comments.get("GENRE"){
+            Some(genre.clone())
+        }else if let Some(genre) = self.comments.get("Genre") {
+            Some(genre.clone())
+        }else if let Some(genre) = self.comments.get("genre") {
+            Some(genre.clone())
+        }else {
+            None
+        }
+    }
+
+    pub(crate) fn get_copyright(&self) -> Option<String> {
+        if let Some(copyright) = self.comments.get("COPYRIGHT"){
+            Some(copyright.clone())
+        }else if let Some(copyright) = self.comments.get("Copyright") {
+            Some(copyright.clone())
+        }else if let Some(copyright) = self.comments.get("copyright") {
+            Some(copyright.clone())
+        }else {
+            None
+        }
+    }
+
+    pub(crate) fn get_date(&self) -> Option<String> {
+        if let Some(date) = self.comments.get("DATE"){
+            Some(date.clone())
+        }else if let Some(date) = self.comments.get("Date") {
+            Some(date.clone())
+        }else if let Some(date) = self.comments.get("date") {
+            Some(date.clone())
+        }else {
+            None
+        }
+    }
+    pub(crate) fn get_composer(&self) -> Option<String> {
+        if let Some(composer) = self.comments.get("COMPOSER"){
+            Some(composer.clone())
+        }else if let Some(composer) = self.comments.get("Composer") {
+            Some(composer.clone())
+        }else if let Some(composer) = self.comments.get("composer") {
+            Some(composer.clone())
+        }else {
+            None
+        }
+    }
+    pub(crate) fn get_track_position(&self) -> Option<String> {
+        if let Some(track_position) = self.comments.get("TRACKNUMBER"){
+            Some(track_position.clone())
+        }else if let Some(track_position) = self.comments.get("TrackNumber") {
+            Some(track_position.clone())
+        }else if let Some(track_position) = self.comments.get("Tracknumber") {
+            Some(track_position.clone())
+        }else if let Some(track_position) = self.comments.get("tracknumber") {
+            Some(track_position.clone())
+        }else {
+            None
+        }
+    }
+
+    pub(crate) fn get_disc(&self) -> Option<String> {
+        if let Some(disc) = self.comments.get("DISCNUMBER"){
+            Some(disc.clone())
+        }else if let Some(disc) = self.comments.get("DiscNumber") {
+            Some(disc.clone())
+        }else if let Some(disc) = self.comments.get("Discnumber") {
+            Some(disc.clone())
+        }else if let Some(disc) = self.comments.get("discnumber") {
+            Some(disc.clone())
+        }else {
+            None
+        }
+    }
+
+    pub(crate) fn get_comments(&self) -> Option<String> {
+        if let Some(comments) = self.comments.get("COMMENT"){
+            Some(comments.clone())
+        }else if let Some(comments) = self.comments.get("Comment") {
+            Some(comments.clone())
+        }else if let Some(comments) = self.comments.get("comment") {
+            Some(comments.clone())
+        }else {
+            None
+        }
+    }
+
+    pub(crate) fn get_disc_id(&self) -> Option<String> {
+        if let Some(value) = self.comments.get("DISCID"){
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("DiscID") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("DiscID") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("Discid") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("discid") {
+            Some(value.clone())
+        }else {
+            None
+        }
+    }
+
+    pub(crate) fn get_organisation(&self) -> Option<String> {
+        if let Some(value) = self.comments.get("ORGANIZATION"){
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("ORGANISATION") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("Organization") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("Organisation") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("organization") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("organisation") {
+            Some(value.clone())
+        }else {
+            None
+        }
+    }
+
+    pub(crate) fn total_track(&self) -> Option<String> {
+        if let Some(value) = self.comments.get("TRACKTOTAL"){
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("TOTALTRACKS") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("totaltracks") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("tracktotal") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("TrackTotal") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("TotalTracks") {
+            Some(value.clone())
+        }else {
+            None
+        }
+    }
+    pub(crate) fn total_disc(&self) -> Option<String> {
+        if let Some(value) = self.comments.get("DISCTOTAL"){
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("TOTALDISCS") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("Totaldisc") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("Disctotal") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("totaldisc") {
+            Some(value.clone())
+        }else if let Some(value) = self.comments.get("disctotal") {
+            Some(value.clone())
+        }else {
+            None
+        }
+    }
+    
 
 }
 
@@ -301,7 +456,11 @@ pub (crate) struct PictureBlock {
     data_len : u32,
     pict_data : Vec<u8>
 }
-
+impl PictureBlock {
+    pub(crate) fn get_picture_data(&self) -> &Vec<u8> {
+        &self.pict_data
+    }
+}
 
 pub (crate) enum FlacMetadataBlockData {
     STREAMINFO(StreamInfoBlock),
@@ -453,10 +612,19 @@ impl FlacMetadataBlockData {
 }
 
 impl FlacMetadataBlockData {
-    pub(crate) fn as_vorbis_comments_frame(&self) -> Option<&VorbisCommentBlock> {
+    pub(crate) fn as_vorbis_comments_block(&self) -> Option<&VorbisCommentBlock> {
         match self {
             FlacMetadataBlockData::VORBISCOMMENT(vc) => Some(vc),
             _ => None
         }
     }
+
+    pub(crate) fn as_picture_block(&self) -> Option<&PictureBlock> {
+        match self {
+            Self::PICTURE(pc) => Some(pc),
+            _ => None
+        }
+    }
+
+
 }

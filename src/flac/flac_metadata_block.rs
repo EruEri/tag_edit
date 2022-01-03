@@ -2,7 +2,7 @@ use std::convert::TryInto;
 
 use crate::util::number::u24;
 
-use super::flac_metadata_block_data::{FlacMetadataBlockData, VorbisCommentBlock};
+use super::flac_metadata_block_data::{FlacMetadataBlockData, VorbisCommentBlock, PictureBlock};
 
 const LAST_BLOCK_FLAG : u8 = 0b10_000_000;
 const BLOCK_TYPE_FLAG : u8 = !LAST_BLOCK_FLAG;
@@ -61,7 +61,11 @@ impl FlacMetadataBlock {
 }
 
 impl FlacMetadataBlock {
-    pub (crate) fn as_vorbis_comments_frame(&self) -> Option<&VorbisCommentBlock> {
-        self.data.as_vorbis_comments_frame()
+    pub (crate) fn as_vorbis_comments_block(&self) -> Option<&VorbisCommentBlock> {
+        self.data.as_vorbis_comments_block()
+    }
+
+    pub (crate) fn as_picture_block(&self) -> Option<&PictureBlock> {
+        self.data.as_picture_block()
     }
 }
