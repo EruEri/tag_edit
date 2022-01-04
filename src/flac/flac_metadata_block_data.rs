@@ -1,4 +1,4 @@
-use crate::{util::number::u24, util::traits::{ToU32, StringConvert, ToU16}, id3::code::picture_code::picture_type::PictureType};
+use crate::{util::{number::u24, traits::RawSize}, util::traits::{ToU32, StringConvert, ToU16}, id3::code::picture_code::picture_type::PictureType};
 use std::{fmt::Display, str::FromStr, collections::HashMap, convert::TryInto};
 
 use super::flac_metadata_block::FlacMetadataBlockType;
@@ -105,6 +105,22 @@ pub (crate) struct CueSheetTrackIndex {
     index_point_number : u8,
 }
 
+impl RawSize for CueSheetTrackIndex {
+    fn raw_size(&self) -> usize {
+        8 + 1 + 3
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.append(&mut self.offset.to_be_bytes().to_vec());
+        bytes.push(self.index_point_number);
+        bytes.push(0);
+        bytes.push(0);
+        bytes.push(0);
+        bytes
+    }
+}
+
 impl CueSheetTrackIndex {
     pub(crate) fn new(buffer : &mut Vec<u8>) -> Option<Self> {
         let offset = u64::from_be_bytes(buffer.drain(0..8).collect::<Vec<u8>>().try_into().ok()?);
@@ -125,8 +141,30 @@ pub (crate) struct CueSheetTrack {
     track_isrc : Vec<u8>,
     is_audio : bool,  
     is_pre_emphasis : bool, // 13 null bytes
-    number_track_index_point : u8,
     tracks_index : Vec<CueSheetTrackIndex>
+}
+
+impl RawSize for CueSheetTrack {
+    fn raw_size(&self) -> usize {
+        let mut track_index_len = 0;
+        self.tracks_index.iter().for_each(|csti| track_index_len+=csti.raw_size());
+        8 + 1 + 12 + 14 + 1 + track_index_len
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.append(&mut self.track_offset.to_be_bytes().to_vec());
+        bytes.push(self.track_number);
+        bytes.append(&mut self.track_isrc.clone());
+        let mut audio_pre_emphasis_byte = 0;
+        if !self.is_audio { audio_pre_emphasis_byte |= TRACK_TYPE_MASK };
+        if self.is_pre_emphasis { audio_pre_emphasis_byte |= PRE_EMPHASIS_MASK};
+        bytes.push(audio_pre_emphasis_byte);
+        bytes.append(&mut vec![0u8; 13]);
+        bytes.push(self.tracks_index.len() as u8);
+        self.tracks_index.iter().for_each(|ctsi| bytes.append(&mut ctsi.raw_bytes()));
+        bytes
+    }
 }
 
 impl CueSheetTrack {
@@ -150,10 +188,33 @@ impl CueSheetTrack {
            track_isrc,
            is_audio,
            is_pre_emphasis,
-           number_track_index_point,
            tracks_index
        })
 
+    }
+}
+
+pub (crate) struct CueSheetBlock {
+    media_catalog_number : String, // 128 bytes length
+    number_lead_sample : u64,
+    is_compact_disc : bool, // 1 + 258 bytes
+    cuesheets_tracks : Vec<CueSheetTrack>
+}
+
+impl RawSize for CueSheetBlock {
+    fn raw_size(&self) -> usize {
+        128 + 8 + 1 + 258 + 1 + self.cuesheets_tracks.len()
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.append(&mut self.media_catalog_number.clone().into_bytes());
+        bytes.append(&mut self.number_lead_sample.to_be_bytes().to_vec());
+        if self.is_compact_disc { bytes.push(COMPACT_DISC_FLAG)} else { bytes.push(0)};
+        bytes.append(&mut vec![0u8; 258]);
+        bytes.push(self.cuesheets_tracks.len() as u8);
+        self.cuesheets_tracks.iter().for_each(|cst| bytes.append(&mut cst.raw_bytes()));
+        bytes
     }
 }
 
@@ -168,20 +229,77 @@ pub (crate) struct StreamInfoBlock {
     md5_signature : u128
 }
 
+impl RawSize for StreamInfoBlock {
+    fn raw_size(&self) -> usize {
+        2 + 2 + 3 + 3 + 8 + 16
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.append(&mut self.min_block_size.to_be_bytes().to_vec());
+        bytes.append(&mut self.max_block_size.to_be_bytes().to_vec());
+        bytes.append(&mut self.min_frame_size.to_be_bytes().to_vec());
+        bytes.append(&mut self.max_frame_size.to_be_bytes().to_vec());
+        bytes.append(&mut self.sample_rate_nb_chan_bit_sample_nb_sample.to_be_bytes().to_vec());
+        bytes.append(&mut self.md5_signature.to_be_bytes().to_vec());
+        bytes
+    }
+}
+
 
 pub (crate) struct PaddingBlock {
     nb_bytes : usize
 }
+impl Default for PaddingBlock {
+    fn default() -> Self {
+        Self { nb_bytes: 0}
+    }
+}
+impl RawSize for PaddingBlock {
+    fn raw_size(&self) -> usize {
+        self.nb_bytes
+    }
 
+    fn raw_bytes(&self) -> Vec<u8> {
+        vec![0u8; self.nb_bytes]
+    }
+}
 
 pub(crate) struct ApplicationBlock {
     app_id : ApplicationID,
     data : Vec<u8>
 }
+
+impl RawSize for ApplicationBlock {
+    fn raw_size(&self) -> usize {
+        4 + self.data.len()
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut buffer = vec![];
+        buffer.append(&mut self.app_id.to_string().into_bytes());
+        buffer.append(&mut self.data.clone());
+        buffer
+    }
+}
 pub struct SeekPoint {
     sample_number_of_first_sample : u64,
     offset : u64,
     number_of_sample : u16
+}
+
+impl RawSize for SeekPoint {
+    fn raw_size(&self) -> usize {
+        8 + 8 + 2
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.append(&mut self.sample_number_of_first_sample.to_be_bytes().to_vec());
+        bytes.append(&mut self.offset.to_be_bytes().to_vec());
+        bytes.append(&mut self.number_of_sample.to_be_bytes().to_vec());
+        bytes
+    }
 }
 
 impl SeekPoint {
@@ -201,6 +319,19 @@ pub (crate) struct SeekTableBlock {
     seek_points : Vec<SeekPoint>
 }
 
+impl RawSize for SeekTableBlock {
+    fn raw_size(&self) -> usize {
+        18 * self.seek_points.len()
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        self.seek_points.iter()
+        .for_each(|seek_point| bytes.append(&mut seek_point.raw_bytes()));
+        bytes
+    }
+}
+
 impl SeekTableBlock {
     fn new(buffer : &mut Vec<u8>, nb_to_create : u32) -> Option<Self> {
         let mut seek_points = vec![];
@@ -217,10 +348,35 @@ impl SeekTableBlock {
 }
 
 pub (crate) struct VorbisCommentBlock {
-    vendor_str_len : u32,
     vendor_name : String,
-    comments_number : u32,
     comments : HashMap<String, String>
+}
+impl Default for VorbisCommentBlock {
+    fn default() -> Self {
+        Self { 
+            vendor_name: "".into(), 
+            comments: Default::default() 
+        }
+    }
+}
+impl RawSize for VorbisCommentBlock {
+    fn raw_size(&self) -> usize {
+        4 + self.vendor_name.len() + 4 + self.comments.len()
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.append(&mut (self.vendor_name.len() as u32).to_le_bytes().to_vec() );
+        bytes.append(&mut self.vendor_name.clone().into_bytes());
+        bytes.append(&mut (self.comments.len() as u32).to_le_bytes().to_vec());
+        for (k,v) in self.comments.iter(){
+            let value_len = v.len() as u32;
+            let format = format!("{}={}", k,v);
+            bytes.append(&mut value_len.to_le_bytes().to_vec());
+            bytes.append(&mut format.into_bytes());
+        }
+        bytes
+    }
 }
 impl VorbisCommentBlock {
     pub(crate) fn _comments(&self) -> &HashMap<String, String> {
@@ -431,34 +587,137 @@ impl VorbisCommentBlock {
             None
         }
     }
+
     
 
 }
 
-pub (crate) struct CueSheetBlock {
-    media_catalog_number : String, // 128 bytes length
-    number_lead_sample : u64,
-    is_compact_disc : bool, // 1 + 258 bytes
-    number_of_tracks : u8, // 1..100
-    cuesheets_tracks : Vec<CueSheetTrack>
+impl VorbisCommentBlock {
+    pub(crate) fn set_title(&mut self, content : &str){
+        self.comments.insert("TITLE".into(), content.into());
+    }
+    pub(crate) fn remove_title(&mut self){
+        self.comments.remove("TITLE".into());
+    }
+    pub(crate) fn set_album(&mut self, content : &str){
+        self.comments.insert("ALBUM".into(), content.into());
+    }
+    pub(crate) fn remove_album(&mut self){
+        self.comments.remove("ALBUM".into());
+    }
+    pub (crate) fn set_artist(&mut self, content : &str){
+        self.comments.insert("ARTIST".into(), content.into());
+    }
+    pub(crate) fn remove_artist(&mut self){
+        self.comments.remove("ARTIST".into());
+    }
+    pub (crate) fn set_album_artist(&mut self, content : &str){
+        self.comments.insert("ALBUMARTIST".into(), content.into());
+    }
+    pub(crate) fn remove_album_artist(&mut self){
+        self.comments.remove("ALBUMARTIST".into());
+    }
+    pub (crate) fn set_genre(&mut self, content : &str){
+        self.comments.insert("GENRE".into(), content.into());
+    }
+    pub(crate) fn remove_genre(&mut self){
+        self.comments.remove("GENRE".into());
+    }
+    pub (crate) fn set_copyright(&mut self, content : &str){
+        self.comments.insert("COPYRIGHT".into(), content.into());
+    }
+    pub(crate) fn remove_copyright(&mut self){
+        self.comments.remove("COPYRIGHT".into());
+    }
+    pub (crate) fn set_date(&mut self, content: &str){
+        self.comments.insert("DATE".into(), content.into());
+    }
+    pub(crate) fn remove_date(&mut self){
+        self.comments.remove("DATE".into());
+    }
+    pub (crate) fn set_composer(&mut self, content : &str){
+        self.comments.insert("COMPOSER".into(), content.into());
+    }
+    pub(crate) fn remove_composer(&mut self){
+        self.comments.remove("COMPOSER".into());
+    }
+    pub (crate) fn set_track_position(&mut self, content : u16){
+        self.comments.insert("TRACKNUMBER".into(), content.to_string());
+    }
+    pub(crate) fn remove_track_position(&mut self){
+        self.comments.remove("TRACKNUMBER".into());
+    }
+    pub (crate) fn set_disc(&mut self, content : u16){
+        self.comments.insert("DISCNUMBER".into(), content.to_string());
+    }
+    pub(crate) fn remove_disc(&mut self){
+        self.comments.remove("DISCNUMBER".into());
+    }
+    pub (crate) fn set_comments(&mut self, content : &str){
+        self.comments.insert("COMMENT".into(), content.into());
+    }
+    pub(crate) fn remove_comments(&mut self){
+        self.comments.remove("COMMENT".into());
+    }
+    pub (crate) fn set_organisation(&mut self, content : &str){
+        self.comments.insert("ORGANIZATION".into(), content.into());
+    }
+    pub(crate) fn remove_organisation(&mut self){
+        self.comments.remove("ORGANIZATION".into());
+    }
+    pub (crate) fn set_total_track(&mut self, content : u16){
+        self.comments.insert("TRACKTOTAL".into(), content.to_string());
+    }
+    pub(crate) fn remove_total_track(&mut self){
+        self.comments.remove("TRACKTOTAL".into());
+    }
+    pub (crate) fn set_total_disc(&mut self, content: u16){
+        self.comments.insert("DISCTOTAL".into(), content.to_string());
+    }
+    pub(crate) fn remove_total_disc(&mut self){
+        self.comments.remove("DISCTOTAL".into());
+    }
+
+    
+    
 }
+
+
 
 pub (crate) struct PictureBlock {
     picture_type : PictureType,
-    mime_type_len: u32,
     mime_type : String,
-    description_len : u32,
     description : String,
     pict_width : u32,
     pict_height : u32,
     color_depth : u32,
     number_of_color : u32,
-    data_len : u32,
     pict_data : Vec<u8>
 }
 impl PictureBlock {
     pub(crate) fn get_picture_data(&self) -> &Vec<u8> {
         &self.pict_data
+    }
+}
+
+impl RawSize for PictureBlock {
+    fn raw_size(&self) -> usize {
+        4 + self.mime_type.len() + self.description.len()
+        + 4 + 4 + 4 + 4 + 4 + self.pict_data.len()
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.append(&mut (self.picture_type as u32).to_be_bytes().to_vec() );
+        bytes.append(&mut self.mime_type.clone().into_bytes());
+        bytes.append(&mut self.description.clone().into_bytes());
+        bytes.append(&mut self.pict_width.to_be_bytes().to_vec());
+        bytes.append(&mut self.pict_height.to_be_bytes().to_vec());
+        bytes.append(&mut self.color_depth.to_be_bytes().to_vec());
+        bytes.append(&mut self.number_of_color.to_be_bytes().to_vec());
+        bytes.append(&mut (self.pict_data.len() as u32).to_be_bytes().to_vec() );
+        bytes.append(&mut self.pict_data.clone());
+        bytes
     }
 }
 
@@ -472,7 +731,44 @@ pub (crate) enum FlacMetadataBlockData {
     PICTURE(PictureBlock),
 }
 
+impl RawSize for FlacMetadataBlockData {
+    fn raw_size(&self) -> usize {
+        match self {
+            Self::STREAMINFO(value) => value.raw_size(),
+            Self::PADDING(value) => value.raw_size(),
+            Self::APPLICATION(value) => value.raw_size(),
+            Self::SEEKTABLE(value) => value.raw_size(),
+            Self::VORBISCOMMENT(value) => value.raw_size(),
+            Self::CUESHEET(value) => value.raw_size(),
+            Self::PICTURE(value) => value.raw_size(),
+        }
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        match self {
+            Self::STREAMINFO(value) => value.raw_bytes(),
+            Self::PADDING(value) => value.raw_bytes(),
+            Self::APPLICATION(value) => value.raw_bytes(),
+            Self::SEEKTABLE(value) => value.raw_bytes(),
+            Self::VORBISCOMMENT(value) => value.raw_bytes(),
+            Self::CUESHEET(value) => value.raw_bytes(),
+            Self::PICTURE(value) => value.raw_bytes(),
+        }
+    }
+}
+
 impl FlacMetadataBlockData {
+    pub (crate) fn default_from(block_type : &FlacMetadataBlockType) -> Self {
+        match block_type {
+            FlacMetadataBlockType::STREAMINFO => todo!(),
+            FlacMetadataBlockType::PADDING => Self::PADDING(PaddingBlock::default()),
+            FlacMetadataBlockType::APPLICATION => todo!(),
+            FlacMetadataBlockType::SEEKTABLE => todo!(),
+            FlacMetadataBlockType::VORBISCOMMENT => Self::VORBISCOMMENT(VorbisCommentBlock::default()),
+            FlacMetadataBlockType::CUESHEET => todo!(),
+            FlacMetadataBlockType::PICTURE => todo!(),
+        }
+    }
     pub (crate) fn new(buffer : &mut Vec<u8>, size : u32, block_type : &FlacMetadataBlockType ) -> Option<Self> {
         match block_type{
             FlacMetadataBlockType::STREAMINFO => {
@@ -528,7 +824,7 @@ impl FlacMetadataBlockData {
                 let vendor_str = buffer.drain(0..vendor_len as usize).collect::<Vec<u8>>().to_utf8()?;
                 println!("vendor name : {}", vendor_str);
                 let comment_list_len = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_le()?;
-                println!("number od comment : {}", comment_list_len);
+                println!("number of comments : {}", comment_list_len);
                 let mut hash : HashMap<String, String> = HashMap::new();
                 for _ in 0..comment_list_len {
                     
@@ -546,9 +842,7 @@ impl FlacMetadataBlockData {
                 Some(
                     Self::VORBISCOMMENT(
                         VorbisCommentBlock {
-                            vendor_str_len: vendor_len,
                             vendor_name: vendor_str,
-                            comments_number: comment_list_len,
                             comments: hash
                         }
                     )
@@ -571,15 +865,12 @@ impl FlacMetadataBlockData {
                 Some(
                     Self::PICTURE(PictureBlock {
                         picture_type,
-                        mime_type_len,
                         mime_type,
-                        description_len,
                         description,
                         pict_width,
                         pict_height,
                         color_depth,
                         number_of_color,
-                        data_len,
                         pict_data,
                     })
                 )
@@ -601,7 +892,6 @@ impl FlacMetadataBlockData {
                         media_catalog_number: media_catalog,
                         number_lead_sample,
                         is_compact_disc,
-                        number_of_tracks,
                         cuesheets_tracks,
                     })
                 )
@@ -613,6 +903,13 @@ impl FlacMetadataBlockData {
 
 impl FlacMetadataBlockData {
     pub(crate) fn as_vorbis_comments_block(&self) -> Option<&VorbisCommentBlock> {
+        match self {
+            FlacMetadataBlockData::VORBISCOMMENT(vc) => Some(vc),
+            _ => None
+        }
+    }
+
+    pub(crate) fn as_vorbis_comments_block_mut(&mut self) -> Option<&mut VorbisCommentBlock> {
         match self {
             FlacMetadataBlockData::VORBISCOMMENT(vc) => Some(vc),
             _ => None

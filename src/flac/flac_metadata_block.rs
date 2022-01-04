@@ -1,12 +1,13 @@
 use std::convert::TryInto;
 
-use crate::util::number::u24;
+use crate::util::{number::u24, traits::RawSize};
 
 use super::flac_metadata_block_data::{FlacMetadataBlockData, VorbisCommentBlock, PictureBlock};
 
 const LAST_BLOCK_FLAG : u8 = 0b10_000_000;
 const BLOCK_TYPE_FLAG : u8 = !LAST_BLOCK_FLAG;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub(crate) enum FlacMetadataBlockType {
     STREAMINFO = 0,
@@ -58,11 +59,33 @@ impl FlacMetadataBlock {
             }
         , is_last_block))
     }
+
+    pub (crate) fn default_from(block_type: FlacMetadataBlockType) -> Self {
+        let data = FlacMetadataBlockData::default_from(&block_type);
+        Self {
+            is_last_block: false,
+            block_type,
+            metadata_len: u24::from(data.raw_size() as u32),
+            data
+        }
+    }
+    pub (crate) fn update_size(&mut self){ 
+        self.metadata_len = (self.data.raw_size() as u32).into()
+    }
 }
 
 impl FlacMetadataBlock {
+    pub (crate) fn block_type(&self) -> &FlacMetadataBlockType {
+        &self.block_type
+    }
+    pub (crate) fn set_last(&mut self, is_last: bool) {
+        self.is_last_block = is_last
+    }
     pub (crate) fn as_vorbis_comments_block(&self) -> Option<&VorbisCommentBlock> {
         self.data.as_vorbis_comments_block()
+    }
+    pub (crate) fn as_vorbis_comments_block_mut(&mut self) -> Option<&mut VorbisCommentBlock> {
+        self.data.as_vorbis_comments_block_mut()
     }
 
     pub (crate) fn as_picture_block(&self) -> Option<&PictureBlock> {
