@@ -708,8 +708,10 @@ impl RawSize for PictureBlock {
 
     fn raw_bytes(&self) -> Vec<u8> {
         let mut bytes = vec![];
-        bytes.append(&mut (self.picture_type as u32).to_be_bytes().to_vec() );
+        bytes.append(&mut (self.picture_type as u32).to_be_bytes().to_vec());
+        bytes.append(&mut (self.mime_type.len() as u32).to_be_bytes().to_vec());
         bytes.append(&mut self.mime_type.clone().into_bytes());
+        bytes.append(&mut (self.description.len() as u32).to_be_bytes().to_vec());
         bytes.append(&mut self.description.clone().into_bytes());
         bytes.append(&mut self.pict_width.to_be_bytes().to_vec());
         bytes.append(&mut self.pict_height.to_be_bytes().to_vec());
