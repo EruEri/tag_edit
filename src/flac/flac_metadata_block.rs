@@ -42,6 +42,20 @@ pub(crate) struct FlacMetadataBlock {
     data : FlacMetadataBlockData
 }
 
+impl RawSize for FlacMetadataBlock {
+    fn raw_size(&self) -> usize {
+        32 + self.data.raw_size()
+    }
+
+    fn raw_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![];
+        bytes.push( (self.is_last_block as u8) | (self.block_type as u8) );
+        bytes.append(&mut self.metadata_len.to_be_bytes().to_vec());
+        bytes.append(&mut self.data.raw_bytes());
+        bytes
+    }
+}
+
 impl FlacMetadataBlock {
     pub (crate) fn new(buffer : &mut Vec<u8>) -> Option<(Self, bool)> {
         let block_info = buffer.remove(0);

@@ -859,7 +859,7 @@ impl FlacMetadataBlockData {
                 let pict_height = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_be()?;
                 let color_depth = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_be()?;
                 let number_of_color = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_be()?;
-                let data_len = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_be()?;
+                let _ = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_be()?;
                 let size = size - (4 + 4 + mime_type_len + 4 + description_len + 20);
                 let pict_data = buffer.drain(0..(size as usize)).collect::<Vec<u8>>();
                 Some(

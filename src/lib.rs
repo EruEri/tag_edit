@@ -73,27 +73,14 @@ mod test {
     const INPUT_FILE : &'static str = "file_test/mp3/02 VANISHING POINT.mp3";
     const OUTPUT_TEST : &'static str = "file_test/output/o.mp3";
     const IMAGE_PATH : &'static str = "file_test/image/mysfloreg.jpeg";
-    const FLAC_FILE : &'static str = "file_test/flac/03. Sleepless.flac";
+    const FLAC_FILE : &'static str = "file_test/flac/02. CHAIN.flac";
     
     use std::{io::{Error, Read, Write}, fs::OpenOptions};
 
     use crate::{metadata::Metadata, id3_tag_builder::ID3TagBuilder, FlacTag};
     
 
-    #[test]
-    fn comment_frame_test(){
-        if let Some(metadata) = Metadata::from_path(INPUT_FILE){
-            //metadata.set_artist("Foo".into());
-            //metadata.set_bpm(97);
-            //metadata.set_publisher("BAR".into());
-            assert_eq!(metadata.artist(), Some("Maon Kurosaki".to_string()));
-            //assert_eq!(metadata.tag().get_size() as usize, metadata.tag().as_bytes().len())
-        }else {
-            panic!("Cannot create metadata")
-        }
-    }
-
-    #[test]
+    //#[test]
     fn tag_builder() -> Result<(), Error>{
         let mut buff_data = vec![];
         let mut source = OpenOptions::new().create(false).read(true).open("file_test/mp3/01 Setsuna no Kajitsu.mp3")?;
@@ -120,10 +107,12 @@ mod test {
     }
 
     #[test]
-    fn flac_read(){
-        if let Some(flactag) = FlacTag::from_path(FLAC_FILE) {
-            assert!(flactag.artist().is_some());
-            assert_eq!(flactag.artist().unwrap(), "JUNNA".to_string())
+    fn flac_read() -> Result<(), Error>{
+        if let Some((flactag, clone)) = FlacTag::from_path_debug(FLAC_FILE) {
+
+            assert_eq!(clone.len(), flactag.into_bytes().len());
+
+            Ok(())
             //assert_eq!(flactag.title(), Some("CHAIN".to_string()))
         }else {
             panic!("Not created")
