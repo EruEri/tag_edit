@@ -74,6 +74,7 @@ mod test {
     const OUTPUT_TEST : &'static str = "file_test/output/o.mp3";
     const IMAGE_PATH : &'static str = "file_test/image/mysfloreg.jpeg";
     const FLAC_FILE : &'static str = "file_test/flac/02. CHAIN.flac";
+    const OUTPUT_F_TEST : &'static str = "file_test/output/f.flac";
     
     use std::{io::{Error, Read, Write}, fs::OpenOptions};
 
@@ -108,10 +109,13 @@ mod test {
 
     #[test]
     fn flac_read() -> Result<(), Error>{
-        if let Some((flactag, clone)) = FlacTag::from_path_debug(FLAC_FILE) {
+        if let Some((mut flactag, clone)) = FlacTag::from_path_debug(FLAC_FILE) {
+            flactag.set_title("Darwin game opening");
+            //flactag.set_album("Dummy ambum");
+            let mut into = flactag.into_bytes();
 
-            assert_eq!(clone.len(), flactag.into_bytes().len());
-
+            let mut file  = OpenOptions::new().create(true).truncate(true).write(true).open(OUTPUT_F_TEST)?;
+            let _ = file.write(&mut into);
             Ok(())
             //assert_eq!(flactag.title(), Some("CHAIN".to_string()))
         }else {

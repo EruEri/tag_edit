@@ -14,7 +14,7 @@ impl u24 {
 
     pub (crate) fn to_be_bytes(&self) -> [u8; 3] {
         let bytes = self.n.to_be_bytes();
-       [bytes[0], bytes[1], bytes[2]]
+       [bytes[1], bytes[2], bytes[3]]
     }
 
     pub (crate) fn value(&self) -> u32 {

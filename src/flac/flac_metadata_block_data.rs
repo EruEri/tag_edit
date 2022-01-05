@@ -349,19 +349,21 @@ impl SeekTableBlock {
 
 pub (crate) struct VorbisCommentBlock {
     vendor_name : String,
-    comments : HashMap<String, String>
+    comments : HashMap<String, String>,
 }
 impl Default for VorbisCommentBlock {
     fn default() -> Self {
         Self { 
             vendor_name: "".into(), 
-            comments: Default::default() 
+            comments: Default::default() ,
         }
     }
 }
 impl RawSize for VorbisCommentBlock {
     fn raw_size(&self) -> usize {
-        4 + self.vendor_name.len() + 4 + self.comments.len()
+        let mut comment_len = 0;
+        self.comments.iter().for_each(|(k,v)| comment_len+= k.len() + v.len() + 1 + 4);
+        4 + self.vendor_name.len() + 4 + comment_len
     }
 
     fn raw_bytes(&self) -> Vec<u8> {
@@ -370,18 +372,14 @@ impl RawSize for VorbisCommentBlock {
         bytes.append(&mut self.vendor_name.clone().into_bytes());
         bytes.append(&mut (self.comments.len() as u32).to_le_bytes().to_vec());
         for (k,v) in self.comments.iter(){
-            let value_len = v.len() as u32;
             let format = format!("{}={}", k,v);
-            bytes.append(&mut value_len.to_le_bytes().to_vec());
+            bytes.append(&mut (format.len() as u32).to_le_bytes().to_vec());
             bytes.append(&mut format.into_bytes());
         }
         bytes
     }
 }
 impl VorbisCommentBlock {
-    pub(crate) fn _comments(&self) -> &HashMap<String, String> {
-        &self.comments
-    }
 
     pub (crate) fn get_title(&self) -> Option<String> {
         if let Some(title) = self.comments.get("TITLE"){
@@ -799,7 +797,7 @@ impl FlacMetadataBlockData {
             FlacMetadataBlockType::PADDING => {
                 let size = size as usize;
                 buffer.drain(0..size);
-                println!("padding size : {}", size);
+                //println!("padding size : {}", size);
                 Some(Self::PADDING(PaddingBlock {
                     nb_bytes : size
                 }))
@@ -824,9 +822,7 @@ impl FlacMetadataBlockData {
             FlacMetadataBlockType::VORBISCOMMENT => {
                 let vendor_len  = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_le()?;
                 let vendor_str = buffer.drain(0..vendor_len as usize).collect::<Vec<u8>>().to_utf8()?;
-                println!("vendor name : {}", vendor_str);
                 let comment_list_len = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_le()?;
-                println!("number of comments : {}", comment_list_len);
                 let mut hash : HashMap<String, String> = HashMap::new();
                 for _ in 0..comment_list_len {
                     
@@ -836,16 +832,16 @@ impl FlacMetadataBlockData {
                     let mut split = comment.splitn(2, "=");
                     let first = split.next()?;
                     let second = split.next()?;
-                    println!("  {} : {} ", first, second);
+                    //println!("  {} : {} ", first, second);
                     
                     hash.insert(first.into(), second.into());
                 }
-                //println!("{:?}", hash);
+                //println!("In Vorbis data size passed : {}", size);
                 Some(
                     Self::VORBISCOMMENT(
                         VorbisCommentBlock {
                             vendor_name: vendor_str,
-                            comments: hash
+                            comments: hash,
                         }
                     )
                 )
@@ -883,7 +879,7 @@ impl FlacMetadataBlockData {
                 let is_compact_disc = (buffer.remove(0) & COMPACT_DISC_FLAG) == COMPACT_DISC_FLAG;
                 buffer.drain(0..258);
                 let number_of_tracks = buffer.remove(0);
-                println!("number of cuesheet : {}", number_of_tracks);
+                //println!("number of cuesheet : {}", number_of_tracks);
                 let mut cuesheets_tracks = vec![];
                 for _ in 0..number_of_tracks {
                     let cuesheet = CueSheetTrack::new(buffer)?;
