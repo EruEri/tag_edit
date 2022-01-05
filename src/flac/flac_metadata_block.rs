@@ -85,6 +85,14 @@ impl FlacMetadataBlock {
             data
         }
     }
+    pub (crate) fn new_picture_block(picture_block : PictureBlock) -> Self {
+        Self {
+            is_last_block: false,
+            block_type: FlacMetadataBlockType::PICTURE,
+            metadata_len: (picture_block.raw_size() as u32).into(),
+            data: FlacMetadataBlockData::PICTURE(picture_block),
+        }
+    }
     pub (crate) fn update_size(&mut self){ 
         self.metadata_len = (self.data.raw_size() as u32).into()
     }

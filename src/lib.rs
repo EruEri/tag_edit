@@ -69,6 +69,7 @@ pub (crate) mod flac;
 
 
 #[cfg(test)]
+#[allow(unused)]
 mod test {
     const INPUT_FILE : &'static str = "file_test/mp3/02 VANISHING POINT.mp3";
     const OUTPUT_TEST : &'static str = "file_test/output/o.mp3";
@@ -109,9 +110,8 @@ mod test {
 
     #[test]
     fn flac_read() -> Result<(), Error>{
-        if let Some((mut flactag, clone)) = FlacTag::from_path_debug(FLAC_FILE) {
-            flactag.set_title("Darwin game opening");
-            //flactag.set_album("Dummy ambum");
+        if let Some(mut flactag) = FlacTag::from_path(FLAC_FILE) {
+            //flactag.set_title("Darwin game opening");
             let mut into = flactag.into_bytes();
 
             let mut file  = OpenOptions::new().create(true).truncate(true).write(true).open(OUTPUT_F_TEST)?;
