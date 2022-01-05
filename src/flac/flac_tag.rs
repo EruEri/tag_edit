@@ -1,3 +1,4 @@
+use std::io::{Error, Write};
 use std::{fs::OpenOptions, io::Read};
 
 use crate::id3::code::picture_code::picture_type::PictureType;
@@ -11,6 +12,7 @@ use super::flac_metadata_block_data::PictureBlock;
 pub(crate) const FLAC_ID: &'static str = "fLaC";
 
 pub struct FlacTag {
+    filename : String,
     _id: String,
     stream_info: FlacMetadataBlock,
     metadata_blocks: Vec<FlacMetadataBlock>,
@@ -34,6 +36,7 @@ impl FlacTag {
             is_last = last;
         }
         Some(Self {
+            filename: path.into(),
             _id: FLAC_ID.to_string(),
             stream_info,
             metadata_blocks,
@@ -56,6 +59,16 @@ impl FlacTag {
             block.set_last(true);
             self.metadata_blocks.push(block)
         }
+    }
+    pub fn overwrite_flac(&self) -> Result<(), Error> {
+        self.write_flac(self.filename.as_str())
+    }
+    pub fn write_flac(&self, path: &str) -> Result<(), Error> {
+        let mut output = OpenOptions::new()
+        .create(true).read(false).write(true).truncate(true)
+        .open(path)?;
+        let _ = output.write(self.into_bytes().as_slice())?;
+        Ok(())
     }
 
     pub(crate) fn into_bytes(&self) -> Vec<u8> {
@@ -217,6 +230,15 @@ impl FlacTag {
                 Some(pc) => Some(pc.get_picture_data()),
             })
             .collect()
+    }
+
+    pub fn get_custom_field(&self, field : &str) -> Option<String> {
+        self.metadata_blocks.iter().find_map(|flac_block| {
+            match  flac_block.as_vorbis_comments_block() {
+                None => None,
+                Some(vorbis) => vorbis.get_custom_field(field)              
+            }
+        })
     }
 }
 // Setter
@@ -401,6 +423,19 @@ impl FlacTag {
             let mut flac_vorbis_frame = FlacMetadataBlock::default_from(VORBISCOMMENT);
             let vorbis = flac_vorbis_frame.as_vorbis_comments_block_mut().unwrap();
             vorbis.set_organisation(content);
+            flac_vorbis_frame.update_size();
+            self.insert_metadata_block(flac_vorbis_frame);
+        }
+    }
+    pub fn set_custom_field(&mut self, field : &str, content: &str) {
+        if let Some(flac_vorbis_block) = self.get_block_mut(&VORBISCOMMENT) {
+            let vorbis = flac_vorbis_block.as_vorbis_comments_block_mut().unwrap();
+            vorbis.set_custom_field(field, content);
+            flac_vorbis_block.update_size()
+        } else {
+            let mut flac_vorbis_frame = FlacMetadataBlock::default_from(VORBISCOMMENT);
+            let vorbis = flac_vorbis_frame.as_vorbis_comments_block_mut().unwrap();
+            vorbis.set_custom_field(field, content);
             flac_vorbis_frame.update_size();
             self.insert_metadata_block(flac_vorbis_frame);
         }
@@ -622,5 +657,20 @@ impl FlacTag {
     pub fn remove_all_pictures(&mut self) {
         self.metadata_blocks
             .retain(|flac_block| flac_block.block_type() != &FlacMetadataBlockType::PICTURE)
+    }
+    pub fn remove_custom_field(&mut self, field : &str) -> Option<String> {
+        self.metadata_blocks
+        .iter_mut()
+        .find(|f| f.block_type() == &VORBISCOMMENT)
+        .and_then(|flac_block| {
+            let value = flac_block.as_vorbis_comments_block_mut()
+            .unwrap()
+            .remove_custom_field(field);
+            Some((flac_block, value))
+        })
+        .and_then(|(f, value)| {
+            f.update_size();
+            value
+        })
     }
 }

@@ -600,6 +600,10 @@ impl VorbisCommentBlock {
             None
         }
     }
+
+    pub(crate) fn get_custom_field(&self, field: &str) -> Option<String> {
+        self.comments.get(field).and_then(|s| Some(s.clone()))
+    }
 }
 
 impl VorbisCommentBlock {
@@ -690,6 +694,12 @@ impl VorbisCommentBlock {
     }
     pub(crate) fn remove_total_disc(&mut self) {
         self.comments.remove("DISCTOTAL".into());
+    }
+    pub (crate) fn set_custom_field(&mut self, field : &str, content: &str){
+        self.comments.insert(field.into(), content.into());
+    }
+    pub (crate) fn remove_custom_field(&mut self, field : &str) -> Option<String> {
+        self.comments.remove(field)
     }
 }
 

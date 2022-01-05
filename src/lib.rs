@@ -74,7 +74,7 @@ mod test {
     const INPUT_FILE : &'static str = "file_test/mp3/02 VANISHING POINT.mp3";
     const OUTPUT_TEST : &'static str = "file_test/output/o.mp3";
     const IMAGE_PATH : &'static str = "file_test/image/mysfloreg.jpeg";
-    const FLAC_FILE : &'static str = "file_test/flac/02. CHAIN.flac";
+    const FLAC_FILE : &'static str = "file_test/flac/02. believe in myself.flac";
     const OUTPUT_F_TEST : &'static str = "file_test/output/f.flac";
     
     use std::{io::{Error, Read, Write}, fs::OpenOptions};
@@ -112,10 +112,10 @@ mod test {
     fn flac_read() -> Result<(), Error>{
         if let Some(mut flactag) = FlacTag::from_path(FLAC_FILE) {
             //flactag.set_title("Darwin game opening");
-            let mut into = flactag.into_bytes();
-
-            let mut file  = OpenOptions::new().create(true).truncate(true).write(true).open(OUTPUT_F_TEST)?;
-            let _ = file.write(&mut into);
+            flactag.set_album("Tokyo 1/3650");
+            flactag.set_artist("Nanjo Yoshino");
+            flactag.set_album_artist("Yohsino Nanjo");
+            flactag.write_flac(OUTPUT_F_TEST)?;
             Ok(())
             //assert_eq!(flactag.title(), Some("CHAIN".to_string()))
         }else {
