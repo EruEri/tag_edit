@@ -499,6 +499,12 @@ impl VorbisCommentBlock {
     pub (crate) fn add_album_artist(&mut self, content: &str) {
         self.comments.add("ALBUMARTIST", content)
     }
+    pub (crate) fn set_bpm(&mut self, content: u16){
+        self.comments.set("BPM", content.to_string().as_str())
+    }
+    pub (crate) fn remove_bpm(&mut self) {
+        self.comments.remove("BPM")
+    }
     pub(crate) fn set_genre(&mut self, content: &str) {
         self.comments.set("GENRE", content);
     }

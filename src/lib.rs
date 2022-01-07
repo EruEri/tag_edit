@@ -74,7 +74,7 @@ mod test {
     const INPUT_FILE : &'static str = "file_test/mp3/02 VANISHING POINT.mp3";
     const OUTPUT_TEST : &'static str = "file_test/output/o.mp3";
     const IMAGE_PATH : &'static str = "file_test/image/mysfloreg.jpeg";
-    const FLAC_FILE : &'static str = "file_test/flac/03. place roulette.flac";
+    const FLAC_FILE : &'static str = "file_test/flac/03 - the WORLD.flac";
     const OUTPUT_F_TEST : &'static str = "file_test/output/f.flac";
     
     use std::{io::{Error, Read, Write}, fs::OpenOptions, collections::HashMap};
@@ -113,8 +113,11 @@ mod test {
             flactag.set_title("Darwin game opening");
             flactag.set_album("Tokyo 1/3650");
             flactag.set_artist("Nanjo Yoshino");
+            flactag.add_artist("An other artist");
             flactag.set_album_artist("Yohsino Nanjo");
-            flactag.write_flac(OUTPUT_F_TEST)?;
+
+            assert_eq!(flactag.artist().unwrap(), String::from("Nanjo Yoshino,An other artist"));
+            //flactag.write_flac(OUTPUT_F_TEST)?;
             Ok(())
             //assert_eq!(flactag.title(), Some("CHAIN".to_string()))
         }else {

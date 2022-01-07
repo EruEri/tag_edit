@@ -388,6 +388,19 @@ impl FlacTag {
             self.insert_metadata_block(flac_vorbis_frame);
         }
     }
+    pub fn set_bpm(&mut self, content: u16) {
+        if let Some(flac_vorbis_block) = self.get_block_mut(&VORBISCOMMENT) {
+            let vorbis = flac_vorbis_block.as_vorbis_comments_block_mut().unwrap();
+            vorbis.set_bpm(content);
+            flac_vorbis_block.update_size()
+        } else {
+            let mut flac_vorbis_frame = FlacMetadataBlock::default_from(VORBISCOMMENT);
+            let vorbis = flac_vorbis_frame.as_vorbis_comments_block_mut().unwrap();
+            vorbis.set_bpm(content);
+            flac_vorbis_frame.update_size();
+            self.insert_metadata_block(flac_vorbis_frame);
+        }
+    }
     pub fn add_composer(&mut self, content: &str) {
         if let Some(flac_vorbis_block) = self.get_block_mut(&VORBISCOMMENT) {
             let vorbis = flac_vorbis_block.as_vorbis_comments_block_mut().unwrap();
@@ -697,6 +710,19 @@ impl FlacTag {
                     .as_vorbis_comments_block_mut()
                     .unwrap()
                     .remove_track_position();
+                Some(flac_block)
+            })
+            .and_then(|flac_block| Some(flac_block.update_size()));
+    }
+    pub fn remove_bpm(&mut self) {
+        self.metadata_blocks
+            .iter_mut()
+            .find(|f| f.block_type() == &VORBISCOMMENT)
+            .and_then(|flac_block| {
+                flac_block
+                    .as_vorbis_comments_block_mut()
+                    .unwrap()
+                    .remove_bpm();
                 Some(flac_block)
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
