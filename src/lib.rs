@@ -74,7 +74,7 @@ mod test {
     const INPUT_FILE : &'static str = "file_test/mp3/02 VANISHING POINT.mp3";
     const OUTPUT_TEST : &'static str = "file_test/output/o.mp3";
     const IMAGE_PATH : &'static str = "file_test/image/mysfloreg.jpeg";
-    const FLAC_FILE : &'static str = "file_test/flac/02. believe in myself.flac";
+    const FLAC_FILE : &'static str = "file_test/flac/03. place roulette.flac";
     const OUTPUT_F_TEST : &'static str = "file_test/output/f.flac";
     
     use std::{io::{Error, Read, Write}, fs::OpenOptions, collections::HashMap};
@@ -107,10 +107,10 @@ mod test {
         Ok(())
     }
 
-    //#[test]
+    #[test]
     fn flac_read() -> Result<(), Error>{
         if let Some(mut flactag) = FlacTag::from_path(FLAC_FILE) {
-            //flactag.set_title("Darwin game opening");
+            flactag.set_title("Darwin game opening");
             flactag.set_album("Tokyo 1/3650");
             flactag.set_artist("Nanjo Yoshino");
             flactag.set_album_artist("Yohsino Nanjo");

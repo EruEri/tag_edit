@@ -1,9 +1,9 @@
 use crate::{
     id3::code::picture_code::picture_type::PictureType,
-    util::traits::{StringConvert, ToU16, ToU32},
+    util::{traits::{StringConvert, ToU16, ToU32}, vorbis_vector::VorbisVector},
     util::{number::u24, traits::RawSize},
 };
-use std::{collections::HashMap, convert::TryInto, fmt::Display, str::FromStr};
+use std::{convert::TryInto, fmt::Display, str::FromStr};
 
 use super::flac_metadata_block::FlacMetadataBlockType;
 
@@ -363,7 +363,7 @@ impl SeekTableBlock {
 
 pub(crate) struct VorbisCommentBlock {
     vendor_name: String,
-    comments: HashMap<String, String>,
+    comments: VorbisVector
 }
 impl Default for VorbisCommentBlock {
     fn default() -> Self {
@@ -378,7 +378,12 @@ impl RawSize for VorbisCommentBlock {
         let mut comment_len = 0;
         self.comments
             .iter()
-            .for_each(|(k, v)| comment_len += k.len() + v.len() + 1 + 4);
+            .for_each(|(k, v)| {
+                let split = v.split(",").collect::<Vec<&str>>();
+                let nb_value = split.len();
+                comment_len += (k.len() * nb_value) + (1 * nb_value) + (4 * nb_value);
+                split.into_iter().for_each(|s| comment_len += s.len())
+            });
         4 + self.vendor_name.len() + 4 + comment_len
     }
 
@@ -388,217 +393,74 @@ impl RawSize for VorbisCommentBlock {
         bytes.append(&mut self.vendor_name.clone().into_bytes());
         bytes.append(&mut (self.comments.len() as u32).to_le_bytes().to_vec());
         for (k, v) in self.comments.iter() {
-            let format = format!("{}={}", k, v);
-            bytes.append(&mut (format.len() as u32).to_le_bytes().to_vec());
-            bytes.append(&mut format.into_bytes());
+            let split = v.split(",").collect::<Vec<&str>>();
+            for value in split {
+                let format = format!("{}={}", k, value);
+                println!("format : {}", format);
+                bytes.append(&mut (format.len() as u32).to_le_bytes().to_vec());
+                bytes.append(&mut format.into_bytes());
+            }
+
         }
         bytes
     }
 }
 impl VorbisCommentBlock {
     pub(crate) fn get_title(&self) -> Option<String> {
-        if let Some(title) = self.comments.get("TITLE") {
-            Some(title.clone())
-        } else if let Some(title) = self.comments.get("Title") {
-            Some(title.clone())
-        } else if let Some(title) = self.comments.get("title") {
-            Some(title.clone())
-        } else {
-            None
-        }
+        self.comments.get("TITLE")
     }
 
     pub(crate) fn get_artist(&self) -> Option<String> {
-        if let Some(artist) = self.comments.get("ARTIST") {
-            Some(artist.clone())
-        } else if let Some(artist) = self.comments.get("Artist") {
-            Some(artist.clone())
-        } else if let Some(artist) = self.comments.get("artist") {
-            Some(artist.clone())
-        } else {
-            None
-        }
+        self.comments.get("ARTIST")
     }
 
     pub(crate) fn get_album(&self) -> Option<String> {
-        if let Some(album) = self.comments.get("ALBUM") {
-            Some(album.clone())
-        } else if let Some(album) = self.comments.get("Album") {
-            Some(album.clone())
-        } else if let Some(album) = self.comments.get("album") {
-            Some(album.clone())
-        } else {
-            None
-        }
+        self.comments.get("ALBUM")
     }
 
     pub(crate) fn get_album_artist(&self) -> Option<String> {
-        if let Some(album_artist) = self.comments.get("ALBUMARTIST") {
-            Some(album_artist.clone())
-        } else if let Some(album_artist) = self.comments.get("AlbumArtist") {
-            Some(album_artist.clone())
-        } else if let Some(album_artist) = self.comments.get("Albumartist") {
-            Some(album_artist.clone())
-        } else if let Some(album_artist) = self.comments.get("albumartist") {
-            Some(album_artist.clone())
-        } else {
-            None
-        }
+        self.comments.get("ALBUMARTIST")
     }
 
     pub(crate) fn get_genre(&self) -> Option<String> {
-        if let Some(genre) = self.comments.get("GENRE") {
-            Some(genre.clone())
-        } else if let Some(genre) = self.comments.get("Genre") {
-            Some(genre.clone())
-        } else if let Some(genre) = self.comments.get("genre") {
-            Some(genre.clone())
-        } else {
-            None
-        }
+        self.comments.get("GENRE")
     }
 
     pub(crate) fn get_copyright(&self) -> Option<String> {
-        if let Some(copyright) = self.comments.get("COPYRIGHT") {
-            Some(copyright.clone())
-        } else if let Some(copyright) = self.comments.get("Copyright") {
-            Some(copyright.clone())
-        } else if let Some(copyright) = self.comments.get("copyright") {
-            Some(copyright.clone())
-        } else {
-            None
-        }
+        self.comments.get("COPYRIGHT")
     }
 
     pub(crate) fn get_date(&self) -> Option<String> {
-        if let Some(date) = self.comments.get("DATE") {
-            Some(date.clone())
-        } else if let Some(date) = self.comments.get("Date") {
-            Some(date.clone())
-        } else if let Some(date) = self.comments.get("date") {
-            Some(date.clone())
-        } else {
-            None
-        }
+        self.comments.get("DATE") 
     }
     pub(crate) fn get_composer(&self) -> Option<String> {
-        if let Some(composer) = self.comments.get("COMPOSER") {
-            Some(composer.clone())
-        } else if let Some(composer) = self.comments.get("Composer") {
-            Some(composer.clone())
-        } else if let Some(composer) = self.comments.get("composer") {
-            Some(composer.clone())
-        } else {
-            None
-        }
+        self.comments.get("COMPOSER")
     }
     pub(crate) fn get_track_position(&self) -> Option<String> {
-        if let Some(track_position) = self.comments.get("TRACKNUMBER") {
-            Some(track_position.clone())
-        } else if let Some(track_position) = self.comments.get("TrackNumber") {
-            Some(track_position.clone())
-        } else if let Some(track_position) = self.comments.get("Tracknumber") {
-            Some(track_position.clone())
-        } else if let Some(track_position) = self.comments.get("tracknumber") {
-            Some(track_position.clone())
-        } else {
-            None
-        }
+        self.comments.get("TRACKNUMBER")
     }
 
     pub(crate) fn get_disc(&self) -> Option<String> {
-        if let Some(disc) = self.comments.get("DISCNUMBER") {
-            Some(disc.clone())
-        } else if let Some(disc) = self.comments.get("DiscNumber") {
-            Some(disc.clone())
-        } else if let Some(disc) = self.comments.get("Discnumber") {
-            Some(disc.clone())
-        } else if let Some(disc) = self.comments.get("discnumber") {
-            Some(disc.clone())
-        } else {
-            None
-        }
+        self.comments.get("DISCNUMBER")
     }
 
     pub(crate) fn get_comments(&self) -> Option<String> {
-        if let Some(comments) = self.comments.get("COMMENT") {
-            Some(comments.clone())
-        } else if let Some(comments) = self.comments.get("Comment") {
-            Some(comments.clone())
-        } else if let Some(comments) = self.comments.get("comment") {
-            Some(comments.clone())
-        } else {
-            None
-        }
+        self.comments.get("COMMENT")
     }
 
     pub(crate) fn get_disc_id(&self) -> Option<String> {
-        if let Some(value) = self.comments.get("DISCID") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("DiscID") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("DiscID") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("Discid") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("discid") {
-            Some(value.clone())
-        } else {
-            None
-        }
+        self.comments.get("DISCID")
     }
 
     pub(crate) fn get_organisation(&self) -> Option<String> {
-        if let Some(value) = self.comments.get("ORGANIZATION") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("ORGANISATION") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("Organization") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("Organisation") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("organization") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("organisation") {
-            Some(value.clone())
-        } else {
-            None
-        }
+        self.comments.get("ORGANIZATION")
     }
 
     pub(crate) fn total_track(&self) -> Option<String> {
-        if let Some(value) = self.comments.get("TRACKTOTAL") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("TOTALTRACKS") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("totaltracks") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("tracktotal") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("TrackTotal") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("TotalTracks") {
-            Some(value.clone())
-        } else {
-            None
-        }
+        self.comments.get("TRACKTOTAL")
     }
     pub(crate) fn total_disc(&self) -> Option<String> {
-        if let Some(value) = self.comments.get("DISCTOTAL") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("TOTALDISCS") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("Totaldisc") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("Disctotal") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("totaldisc") {
-            Some(value.clone())
-        } else if let Some(value) = self.comments.get("disctotal") {
-            Some(value.clone())
-        } else {
-            None
-        }
+        self.comments.get("DISCTOTAL")
     }
 
     pub(crate) fn get_custom_field(&self, field: &str) -> Option<String> {
@@ -608,97 +470,97 @@ impl VorbisCommentBlock {
 
 impl VorbisCommentBlock {
     pub(crate) fn set_title(&mut self, content: &str) {
-        self.comments.insert("TITLE".into(), content.into());
+        self.comments.set("TITLE", content);
     }
     pub(crate) fn remove_title(&mut self) {
-        self.comments.remove("TITLE".into());
+        self.comments.remove("TITLE");
     }
     pub(crate) fn set_album(&mut self, content: &str) {
-        self.comments.insert("ALBUM".into(), content.into());
+        self.comments.set("ALBUM", content);
     }
     pub(crate) fn remove_album(&mut self) {
-        self.comments.remove("ALBUM".into());
+        self.comments.remove("ALBUM");
     }
     pub(crate) fn set_artist(&mut self, content: &str) {
-        self.comments.insert("ARTIST".into(), content.into());
+        self.comments.set("ARTIST", content);
     }
     pub(crate) fn remove_artist(&mut self) {
-        self.comments.remove("ARTIST".into());
+        self.comments.remove("ARTIST");
     }
     pub(crate) fn set_album_artist(&mut self, content: &str) {
-        self.comments.insert("ALBUMARTIST".into(), content.into());
+        self.comments.set("ALBUMARTIST", content);
     }
     pub(crate) fn remove_album_artist(&mut self) {
-        self.comments.remove("ALBUMARTIST".into());
+        self.comments.remove("ALBUMARTIST");
     }
     pub(crate) fn set_genre(&mut self, content: &str) {
-        self.comments.insert("GENRE".into(), content.into());
+        self.comments.set("GENRE", content);
     }
     pub(crate) fn remove_genre(&mut self) {
-        self.comments.remove("GENRE".into());
+        self.comments.remove("GENRE");
     }
     pub(crate) fn set_copyright(&mut self, content: &str) {
-        self.comments.insert("COPYRIGHT".into(), content.into());
+        self.comments.set("COPYRIGHT", content);
     }
     pub(crate) fn remove_copyright(&mut self) {
-        self.comments.remove("COPYRIGHT".into());
+        self.comments.remove("COPYRIGHT");
     }
     pub(crate) fn set_date(&mut self, content: &str) {
-        self.comments.insert("DATE".into(), content.into());
+        self.comments.set("DATE", content);
     }
     pub(crate) fn remove_date(&mut self) {
-        self.comments.remove("DATE".into());
+        self.comments.remove("DATE");
     }
     pub(crate) fn set_composer(&mut self, content: &str) {
-        self.comments.insert("COMPOSER".into(), content.into());
+        self.comments.set("COMPOSER", content);
     }
     pub(crate) fn remove_composer(&mut self) {
-        self.comments.remove("COMPOSER".into());
+        self.comments.remove("COMPOSER");
     }
     pub(crate) fn set_track_position(&mut self, content: u16) {
         self.comments
-            .insert("TRACKNUMBER".into(), content.to_string());
+            .set("TRACKNUMBER", content.to_string().as_str());
     }
     pub(crate) fn remove_track_position(&mut self) {
-        self.comments.remove("TRACKNUMBER".into());
+        self.comments.remove("TRACKNUMBER");
     }
     pub(crate) fn set_disc(&mut self, content: u16) {
         self.comments
-            .insert("DISCNUMBER".into(), content.to_string());
+            .set("DISCNUMBER", content.to_string().as_str());
     }
     pub(crate) fn remove_disc(&mut self) {
-        self.comments.remove("DISCNUMBER".into());
+        self.comments.remove("DISCNUMBER");
     }
     pub(crate) fn set_comments(&mut self, content: &str) {
-        self.comments.insert("COMMENT".into(), content.into());
+        self.comments.set("COMMENT", content);
     }
     pub(crate) fn remove_comments(&mut self) {
-        self.comments.remove("COMMENT".into());
+        self.comments.remove("COMMENT");
     }
     pub(crate) fn set_organisation(&mut self, content: &str) {
-        self.comments.insert("ORGANIZATION".into(), content.into());
+        self.comments.set("ORGANIZATION", content);
     }
     pub(crate) fn remove_organisation(&mut self) {
-        self.comments.remove("ORGANIZATION".into());
+        self.comments.remove("ORGANIZATION");
     }
     pub(crate) fn set_total_track(&mut self, content: u16) {
         self.comments
-            .insert("TRACKTOTAL".into(), content.to_string());
+            .set("TRACKTOTAL", content.to_string().as_str());
     }
     pub(crate) fn remove_total_track(&mut self) {
-        self.comments.remove("TRACKTOTAL".into());
+        self.comments.remove("TRACKTOTAL");
     }
     pub(crate) fn set_total_disc(&mut self, content: u16) {
         self.comments
-            .insert("DISCTOTAL".into(), content.to_string());
+            .set("DISCTOTAL", content.to_string().as_str());
     }
     pub(crate) fn remove_total_disc(&mut self) {
-        self.comments.remove("DISCTOTAL".into());
+        self.comments.remove("DISCTOTAL");
     }
     pub (crate) fn set_custom_field(&mut self, field : &str, content: &str){
-        self.comments.insert(field.into(), content.into());
+        self.comments.set(field, content);
     }
-    pub (crate) fn remove_custom_field(&mut self, field : &str) -> Option<String> {
+    pub (crate) fn remove_custom_field(&mut self, field : &str) /*-> Option<String>*/ {
         self.comments.remove(field)
     }
 }
@@ -874,7 +736,7 @@ impl FlacMetadataBlockData {
                     .collect::<Vec<u8>>()
                     .to_utf8()?;
                 let comment_list_len = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_le()?;
-                let mut hash: HashMap<String, String> = HashMap::new();
+                let mut vorbis_vector = VorbisVector::default();
                 for _ in 0..comment_list_len {
                     let str_len = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_le()? as usize;
                     let comment = buffer.drain(0..str_len).collect::<Vec<u8>>().to_utf8()?;
@@ -884,12 +746,12 @@ impl FlacMetadataBlockData {
                     let second = split.next()?;
                     //println!("  {} : {} ", first, second);
 
-                    hash.insert(first.into(), second.into());
+                    vorbis_vector.add(first, second);
                 }
                 //println!("In Vorbis data size passed : {}", size);
                 Some(Self::VORBISCOMMENT(VorbisCommentBlock {
                     vendor_name: vendor_str,
-                    comments: hash,
+                    comments: vorbis_vector,
                 }))
             }
             FlacMetadataBlockType::PICTURE => {

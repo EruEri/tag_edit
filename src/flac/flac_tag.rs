@@ -658,7 +658,7 @@ impl FlacTag {
         self.metadata_blocks
             .retain(|flac_block| flac_block.block_type() != &FlacMetadataBlockType::PICTURE)
     }
-    pub fn remove_custom_field(&mut self, field : &str) -> Option<String> {
+    pub fn remove_custom_field(&mut self, field : &str) /*-> Option<String>*/ {
         self.metadata_blocks
         .iter_mut()
         .find(|f| f.block_type() == &VORBISCOMMENT)
@@ -670,7 +670,7 @@ impl FlacTag {
         })
         .and_then(|(f, value)| {
             f.update_size();
-            value
-        })
+            Some(value)
+        });
     }
 }
