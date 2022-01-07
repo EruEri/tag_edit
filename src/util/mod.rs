@@ -4,4 +4,5 @@ pub (crate) mod number;
 pub (crate) mod reading_mode;
 pub (crate) mod extension;
 pub (crate) mod traits;
+pub (crate) mod vorbis_vector;
 pub( crate) mod tag;

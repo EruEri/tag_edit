@@ -77,10 +77,9 @@ mod test {
     const FLAC_FILE : &'static str = "file_test/flac/02. believe in myself.flac";
     const OUTPUT_F_TEST : &'static str = "file_test/output/f.flac";
     
-    use std::{io::{Error, Read, Write}, fs::OpenOptions};
+    use std::{io::{Error, Read, Write}, fs::OpenOptions, collections::HashMap};
 
     use crate::{metadata::Metadata, id3_tag_builder::ID3TagBuilder, FlacTag};
-    
 
     //#[test]
     fn tag_builder() -> Result<(), Error>{
@@ -108,7 +107,7 @@ mod test {
         Ok(())
     }
 
-    #[test]
+    //#[test]
     fn flac_read() -> Result<(), Error>{
         if let Some(mut flactag) = FlacTag::from_path(FLAC_FILE) {
             //flactag.set_title("Darwin game opening");
