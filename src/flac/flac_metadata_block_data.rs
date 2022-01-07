@@ -487,14 +487,23 @@ impl VorbisCommentBlock {
     pub(crate) fn remove_artist(&mut self) {
         self.comments.remove("ARTIST");
     }
+    pub(crate) fn add_artist(&mut self, content: &str) {
+        self.comments.add("ARTIST", content)
+    }
     pub(crate) fn set_album_artist(&mut self, content: &str) {
         self.comments.set("ALBUMARTIST", content);
     }
     pub(crate) fn remove_album_artist(&mut self) {
         self.comments.remove("ALBUMARTIST");
     }
+    pub (crate) fn add_album_artist(&mut self, content: &str) {
+        self.comments.add("ALBUMARTIST", content)
+    }
     pub(crate) fn set_genre(&mut self, content: &str) {
         self.comments.set("GENRE", content);
+    }
+    pub(crate) fn add_genre(&mut self, content: &str) {
+        self.comments.add("GENRE", content)
     }
     pub(crate) fn remove_genre(&mut self) {
         self.comments.remove("GENRE");
@@ -517,6 +526,9 @@ impl VorbisCommentBlock {
     pub(crate) fn remove_composer(&mut self) {
         self.comments.remove("COMPOSER");
     }
+    pub (crate) fn add_composer(&mut self, content: &str){
+        self.comments.add("COMPOSER", content)
+    }
     pub(crate) fn set_track_position(&mut self, content: u16) {
         self.comments
             .set("TRACKNUMBER", content.to_string().as_str());
@@ -531,11 +543,14 @@ impl VorbisCommentBlock {
     pub(crate) fn remove_disc(&mut self) {
         self.comments.remove("DISCNUMBER");
     }
-    pub(crate) fn set_comments(&mut self, content: &str) {
+    pub(crate) fn set_comment(&mut self, content: &str) {
         self.comments.set("COMMENT", content);
     }
     pub(crate) fn remove_comments(&mut self) {
         self.comments.remove("COMMENT");
+    }
+    pub (crate) fn add_comment(&mut self, content: &str){
+        self.comments.add("COMMENT", content)
     }
     pub(crate) fn set_organisation(&mut self, content: &str) {
         self.comments.set("ORGANIZATION", content);
@@ -736,7 +751,7 @@ impl FlacMetadataBlockData {
                     .collect::<Vec<u8>>()
                     .to_utf8()?;
                 let comment_list_len = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_le()?;
-                let mut vorbis_vector = VorbisVector::default();
+                let mut vorbis_vector = VorbisVector::new();
                 for _ in 0..comment_list_len {
                     let str_len = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_le()? as usize;
                     let comment = buffer.drain(0..str_len).collect::<Vec<u8>>().to_utf8()?;

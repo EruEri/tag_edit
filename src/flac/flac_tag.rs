@@ -269,6 +269,20 @@ impl FlacTag {
             self.insert_metadata_block(flac_vorbis_frame);
         }
     }
+    pub fn add_artist(&mut self, content: &str) {
+        if let Some(flac_vorbis_block) = self.get_block_mut(&VORBISCOMMENT) {
+            let vorbis = flac_vorbis_block.as_vorbis_comments_block_mut().unwrap();
+            vorbis.add_artist(content);
+            flac_vorbis_block.update_size()
+        } else {
+            let mut flac_vorbis_frame = FlacMetadataBlock::default_from(VORBISCOMMENT);
+            let vorbis = flac_vorbis_frame.as_vorbis_comments_block_mut().unwrap();
+            vorbis.add_artist(content);
+            flac_vorbis_frame.update_size();
+            self.insert_metadata_block(flac_vorbis_frame);
+        }
+    }
+
     pub fn set_album(&mut self, content: &str) {
         if let Some(flac_vorbis_block) = self.get_block_mut(&VORBISCOMMENT) {
             let vorbis = flac_vorbis_block.as_vorbis_comments_block_mut().unwrap();
@@ -295,6 +309,19 @@ impl FlacTag {
             self.insert_metadata_block(flac_vorbis_frame);
         }
     }
+    pub fn add_album_artist(&mut self, content: &str) {
+        if let Some(flac_vorbis_block) = self.get_block_mut(&VORBISCOMMENT) {
+            let vorbis = flac_vorbis_block.as_vorbis_comments_block_mut().unwrap();
+            vorbis.add_album_artist(content);
+            flac_vorbis_block.update_size()
+        } else {
+            let mut flac_vorbis_frame = FlacMetadataBlock::default_from(VORBISCOMMENT);
+            let vorbis = flac_vorbis_frame.as_vorbis_comments_block_mut().unwrap();
+            vorbis.add_album_artist(content);
+            flac_vorbis_frame.update_size();
+            self.insert_metadata_block(flac_vorbis_frame);
+        }
+    }
     pub fn set_genre(&mut self, content: &str) {
         if let Some(flac_vorbis_block) = self.get_block_mut(&VORBISCOMMENT) {
             let vorbis = flac_vorbis_block.as_vorbis_comments_block_mut().unwrap();
@@ -304,6 +331,19 @@ impl FlacTag {
             let mut flac_vorbis_frame = FlacMetadataBlock::default_from(VORBISCOMMENT);
             let vorbis = flac_vorbis_frame.as_vorbis_comments_block_mut().unwrap();
             vorbis.set_genre(content);
+            flac_vorbis_frame.update_size();
+            self.insert_metadata_block(flac_vorbis_frame);
+        }
+    }
+    pub fn add_genre(&mut self, content: &str) {
+        if let Some(flac_vorbis_block) = self.get_block_mut(&VORBISCOMMENT) {
+            let vorbis = flac_vorbis_block.as_vorbis_comments_block_mut().unwrap();
+            vorbis.add_genre(content);
+            flac_vorbis_block.update_size()
+        } else {
+            let mut flac_vorbis_frame = FlacMetadataBlock::default_from(VORBISCOMMENT);
+            let vorbis = flac_vorbis_frame.as_vorbis_comments_block_mut().unwrap();
+            vorbis.add_genre(content);
             flac_vorbis_frame.update_size();
             self.insert_metadata_block(flac_vorbis_frame);
         }
@@ -344,6 +384,19 @@ impl FlacTag {
             let mut flac_vorbis_frame = FlacMetadataBlock::default_from(VORBISCOMMENT);
             let vorbis = flac_vorbis_frame.as_vorbis_comments_block_mut().unwrap();
             vorbis.set_composer(content);
+            flac_vorbis_frame.update_size();
+            self.insert_metadata_block(flac_vorbis_frame);
+        }
+    }
+    pub fn add_composer(&mut self, content: &str) {
+        if let Some(flac_vorbis_block) = self.get_block_mut(&VORBISCOMMENT) {
+            let vorbis = flac_vorbis_block.as_vorbis_comments_block_mut().unwrap();
+            vorbis.add_composer(content);
+            flac_vorbis_block.update_size()
+        } else {
+            let mut flac_vorbis_frame = FlacMetadataBlock::default_from(VORBISCOMMENT);
+            let vorbis = flac_vorbis_frame.as_vorbis_comments_block_mut().unwrap();
+            vorbis.add_composer(content);
             flac_vorbis_frame.update_size();
             self.insert_metadata_block(flac_vorbis_frame);
         }
@@ -404,16 +457,31 @@ impl FlacTag {
     pub fn set_comment(&mut self, content: &str) {
         if let Some(flac_vorbis_block) = self.get_block_mut(&VORBISCOMMENT) {
             let vorbis = flac_vorbis_block.as_vorbis_comments_block_mut().unwrap();
-            vorbis.set_comments(content);
+            vorbis.set_comment(content);
             flac_vorbis_block.update_size()
         } else {
             let mut flac_vorbis_frame = FlacMetadataBlock::default_from(VORBISCOMMENT);
             let vorbis = flac_vorbis_frame.as_vorbis_comments_block_mut().unwrap();
-            vorbis.set_comments(content);
+            vorbis.set_comment(content);
             flac_vorbis_frame.update_size();
             self.insert_metadata_block(flac_vorbis_frame);
         }
     }
+
+    pub fn add_comment(&mut self, content: &str) {
+        if let Some(flac_vorbis_block) = self.get_block_mut(&VORBISCOMMENT) {
+            let vorbis = flac_vorbis_block.as_vorbis_comments_block_mut().unwrap();
+            vorbis.add_comment(content);
+            flac_vorbis_block.update_size()
+        } else {
+            let mut flac_vorbis_frame = FlacMetadataBlock::default_from(VORBISCOMMENT);
+            let vorbis = flac_vorbis_frame.as_vorbis_comments_block_mut().unwrap();
+            vorbis.add_comment(content);
+            flac_vorbis_frame.update_size();
+            self.insert_metadata_block(flac_vorbis_frame);
+        }
+    }
+    
     pub fn set_organisation(&mut self, content: &str) {
         if let Some(flac_vorbis_block) = self.get_block_mut(&VORBISCOMMENT) {
             let vorbis = flac_vorbis_block.as_vorbis_comments_block_mut().unwrap();
