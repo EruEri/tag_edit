@@ -23,20 +23,20 @@ impl VorbisVector {
     }
 
     pub (crate) fn add(&mut self, key : &str, value: &str) {
-        if let Some((_, ref mut values)) = self.comments.iter_mut().find(|(k,_)| k == key ){
+        let key = key.to_uppercase();
+        if let Some((_, ref mut values)) = self.comments.iter_mut().find(|(k, v)| *k == key && !v.contains(&value.to_string())){
             values.push(value.to_owned());
         }else {
-            let key = key.to_uppercase();
             self.comments.push((key, vec![value.to_owned()] ))
         }
     }
 
     pub (crate) fn set(&mut self, key: &str, value: &str) {
-        if let Some((_, ref mut values)) = self.comments.iter_mut().find(|(k,_)| k == key ){
+        let key = key.to_uppercase();
+        if let Some((_, ref mut values)) = self.comments.iter_mut().find(|(k,_)| *k == key ){
             values.clear();
             values.push(value.to_owned());
         }else {
-            let key = key.to_uppercase();
             self.comments.push((key, vec![value.to_owned()] ))
         }
     }

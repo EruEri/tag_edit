@@ -532,6 +532,25 @@ impl FlacTag {
         let flac_picture_block = FlacMetadataBlock::new_picture_block(picture_block);
         self.insert_metadata_block(flac_picture_block);
     }
+
+    pub fn add_picture_from_path(
+        &mut self,
+        picture_path : &str,
+        picture_type: PictureType,
+        mime_type: &str,
+        description: Option<&str>,
+        picture_width: u32,
+        picture_height: u32,
+        color_depth: u32,
+        number_color_used: Option<u32>,
+    ) -> Result<(), Error> {
+        let mut data = vec![];
+        let mut file = OpenOptions::new().create(false).read(true).open(picture_path)?;
+        file.read_to_end(&mut data)?;
+        Ok(
+            self.add_picture(picture_type, mime_type, description, picture_width, picture_height, color_depth, number_color_used, &data)
+        )
+    }
 }
 
 impl FlacTag {
