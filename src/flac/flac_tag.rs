@@ -886,7 +886,7 @@ impl FlacTag {
     /// See the [FlacTag::add_picture_from_path] method to add an image from a file
     /// 
     /// Arguments
-    /// * `picture_type` : see [tag_edit::PictureType]
+    /// * `picture_type` : see [PictureType]
     /// * `mime_type` : jpeg | png | ... 
     /// * `description` : an optional description of the image
     /// * `picture_width`  : width of the picture 
@@ -927,7 +927,7 @@ impl FlacTag {
     /// 
     /// Arguments
     /// * `picture_path` : image path
-    /// * `picture_type` : see [tag_edit::PictureType]
+    /// * `picture_type` : see [PictureType]
     /// * `mime_type` : jpeg | png | ... 
     /// * `description` : an optional description of the image
     /// * `picture_width`  : width of the picture 

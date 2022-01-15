@@ -1,18 +1,18 @@
 //! A library to read and write tag from audio files.
-//! Currently, only ID3v2.3 supported
+//! Currently, only ID3v2.3 and Flac supported
 //! 
 //! 
 //! 
 //! 
-//! Read tag from file
+//! Read tand write tag from mp3 file
 //! 
 //! 
 //! 
 //! ```no_run
-//! use tag_edit::Metadata;
+//! use tag_edit::ID3TAG;
 //! 
 //! 
-//! let mut metadata = Metadata::from_path("file_test/mp3/1-01 Dark seeks light.mp3").unwrap();
+//! let mut metadata = ID3TAG::from_path("file_test/mp3/1-01 Dark seeks light.mp3").unwrap();
 //! if let Some(_artist) = metadata.artist(){
 //!     // do something
 //! }
@@ -48,21 +48,40 @@
 //! 
 //! ```
 //! 
+//! Read and write metadata from flac file
+//! 
+//! ```
+//! use tag_edit::FlacTag;
+//! let mut flac_tag = FlacTag::from_path("file_test/flac/01. DO IT, DO IT (24bit-48kHz).flac").unwrap();
+//! if let Some(_artist) = flac_tag.artist(){
+//!     // do something
+//! }
+//! 
+//! if let Some(_album) = flac_tag.album(){
+//!     // do something else
+//! }
+//! 
+//! flac_tag.set_disc(1);
+//! 
+//! 
+//! let _ = flac_tag.overwrite_flac();
+//! 
+//! ```
+//! 
 //! 
 
 pub use crate::id3_tag_builder::ID3TagBuilder;
-pub use crate::metadata::Metadata;
 pub use crate::tag_error::TagError;
 pub use crate::id3::id3_frameid::ID3TEXTFRAMEID;
 pub use crate::util::file_format::PictureFormat;
 pub use crate::flac::flac_tag::FlacTag;
 pub use crate::id3::code::picture_code::picture_type::PictureType;
+pub use crate::id3::id3_tag::ID3TAG;
 
 
 pub (crate) mod id3_tag_builder;
 pub (crate) mod id3;
 pub (crate) mod tag_error;
-pub (crate) mod metadata;
 pub (crate) mod util;
 pub (crate) mod flac;
 
@@ -80,9 +99,9 @@ mod test {
     
     use std::{io::{Error, Read, Write}, fs::OpenOptions, collections::HashMap};
 
-    use crate::{metadata::Metadata, id3_tag_builder::ID3TagBuilder, FlacTag};
+    use crate::{id3_tag_builder::ID3TagBuilder, FlacTag, ID3TAG};
 
-    //#[test]
+    #[test]
     fn tag_builder() -> Result<(), Error>{
         let mut buff_data = vec![];
         let mut source = OpenOptions::new().create(false).read(true).open("file_test/mp3/01 Setsuna no Kajitsu.mp3")?;
@@ -101,14 +120,23 @@ mod test {
         if let Err(e) = result {
             panic!("an error occured : {:?}", e)
         }
-        let metadata = Metadata::from_path(OUTPUT_TEST).unwrap();
+        let metadata = ID3TAG::from_path(OUTPUT_TEST).unwrap();
         assert_eq!(metadata.album(), Some("Mystical Flower".to_string()));
         assert_eq!(metadata.year(), Some(2015));
         assert_eq!(metadata.disc(), Some("1/1".to_string()));
         Ok(())
     }
-
     #[test]
+    fn mp3tag() -> Result<(), Error>{
+        let mut dark_seek_light = ID3TAG::from_path("file_test/mp3/1-01 Dark seeks light.mp3").unwrap();
+        dark_seek_light.set_album("An album of Yui ninomiya");
+        dark_seek_light.set_title("Tesla Note Opening");
+        dark_seek_light.set_artist("Yui ninomiya");
+        dark_seek_light.write_tag("file_test/output/id3tag.mp3")
+  
+    }
+
+    //#[test]
     fn flac_read() -> Result<(), Error>{
         if let Some(mut flactag) = FlacTag::from_path(FLAC_FILE) {
             //flactag.set_title("Darwin game opening");

@@ -6,10 +6,11 @@ pub enum AudioFormat {
 }
 
 /// Picture file format
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum PictureFormat {
     PNG,
-    JPEG
+    JPEG,
+    OTHER(String)
 }
 
 impl PictureFormat {
@@ -17,6 +18,7 @@ impl PictureFormat {
         match self {
             PictureFormat::PNG => "image/png".into(),
             PictureFormat::JPEG => "image/jpeg".into(),
+            Self::OTHER(s) => format!("image/{}", s)
         }
     }
 }

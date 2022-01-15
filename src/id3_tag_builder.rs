@@ -4,7 +4,7 @@ use std::{
     io::{Error, Read, Write, Seek, SeekFrom},
 };
 
-use crate::util::file_format::AudioFormat;
+use crate::util::{file_format::AudioFormat, function::read_type_audio_file};
 
 use crate::id3::{
     code::picture_code::picture_type::PictureType,
@@ -13,10 +13,7 @@ use crate::id3::{
 };
 
 use crate::{
-    metadata::read_type_audio_file,
-    util::{
-        file_format::PictureFormat,
-    },
+    util::file_format::PictureFormat,
     tag_error::TagError,
 };
 
@@ -32,10 +29,6 @@ impl ID3TagBuilder {
         Self {
             id3_tag: ID3TAG::new_empty_tag(),
         }
-    }
-
-    pub(crate) fn tag(self) -> ID3TAG {
-        self.id3_tag
     }
     /// Add a text frame to the tag.
     /// Replace the content if the text frame already exists
@@ -154,7 +147,7 @@ impl ID3TagBuilder {
         description: Option<String>,
         text: String,
     ) -> Result<&mut Self, TagError> {
-        match self.id3_tag.add_lyrics(lang.to_string(), description, text) {
+        match self.id3_tag.add_lyrics(lang, description, text) {
             Ok(_) => Ok(self),
             Err(err) => Err(err),
         }
@@ -176,7 +169,7 @@ impl ID3TagBuilder {
     ) -> Result<&mut Self, TagError> {
         match self
             .id3_tag
-            .add_comment(lang.to_string(), description, text)
+            .add_comment(lang, description, text)
         {
             Ok(_) => Ok(self),
             Err(err) => Err(err),
