@@ -56,6 +56,7 @@ pub use crate::tag_error::TagError;
 pub use crate::id3::id3_frameid::ID3TEXTFRAMEID;
 pub use crate::util::file_format::PictureFormat;
 pub use crate::flac::flac_tag::FlacTag;
+pub use crate::id3::code::picture_code::picture_type::PictureType;
 
 
 pub (crate) mod id3_tag_builder;
@@ -74,7 +75,7 @@ mod test {
     const INPUT_FILE : &'static str = "file_test/mp3/02 VANISHING POINT.mp3";
     const OUTPUT_TEST : &'static str = "file_test/output/o.mp3";
     const IMAGE_PATH : &'static str = "file_test/image/mysfloreg.jpeg";
-    const FLAC_FILE : &'static str = "file_test/flac/03 - the WORLD.flac";
+    const FLAC_FILE : &'static str = "file_test/flac/03. Sleepless.flac";
     const OUTPUT_F_TEST : &'static str = "file_test/output/f.flac";
     
     use std::{io::{Error, Read, Write}, fs::OpenOptions, collections::HashMap};
@@ -110,13 +111,15 @@ mod test {
     #[test]
     fn flac_read() -> Result<(), Error>{
         if let Some(mut flactag) = FlacTag::from_path(FLAC_FILE) {
-            flactag.set_title("Darwin game opening");
-            flactag.set_album("Tokyo 1/3650");
-            flactag.set_artist("Nanjo Yoshino");
-            flactag.add_artist("An other artist");
-            flactag.set_album_artist("Yohsino Nanjo");
-
-            assert_eq!(flactag.artist().unwrap(), String::from("Nanjo Yoshino,An other artist"));
+            //flactag.set_title("Darwin game opening");
+            //flactag.set_album("Tokyo 1/3650");
+            //flactag.set_artist("Nanjo Yoshino");
+            //flactag.add_artist("An other artist");
+            //flactag.set_album_artist("Yohsino Nanjo");
+            let album_name = flactag.album().unwrap();
+            println!("bytes : {:?}", album_name.into_bytes());
+            println!("bytes : {:?}", "20×20".to_string().into_bytes());
+            //assert_eq!(flactag.artist().unwrap(), String::from("Nanjo Yoshino,An other artist"));
             //flactag.write_flac(OUTPUT_F_TEST)?;
             Ok(())
             //assert_eq!(flactag.title(), Some("CHAIN".to_string()))

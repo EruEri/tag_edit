@@ -609,6 +609,7 @@ impl PictureBlock {
     ) -> Self {
         let description = match description {None => "".to_owned(), Some(s) => s.into()};
         let number_of_color = match number_color_used {None => 0, Some(n) => n};
+        let mime_type = format!("image/{}", mime_type);
         Self {
             picture_type,
             mime_type: mime_type.into(),

@@ -50,8 +50,9 @@ impl VorbisVector {
     }
 
     pub (crate) fn get(&self, key : &str) -> Option<String> {
+        let key = key.to_uppercase();
         self.comments.iter()
-        .find_map(|(k,v)| if k == key { Some(v.join(",")) } else { None })
+        .find_map(|(k,v)| if *k == key { Some(v.join(",")) } else { None })
     }
 
     pub(crate) fn len(&self) -> usize {
