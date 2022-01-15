@@ -42,7 +42,7 @@ tag_builder
 ```
 
 
-### Reading and writting tag from mp3 file
+### Reading and writting tag from flac file
 ```rust
 use tag_edit::FlacTag;
 let mut flac_tag = FlacTag::from_path("file_test/flac/01. DO IT, DO IT (24bit-48kHz).flac").unwrap();
