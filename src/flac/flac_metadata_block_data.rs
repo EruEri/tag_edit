@@ -379,10 +379,11 @@ impl RawSize for VorbisCommentBlock {
         self.comments
             .iter()
             .for_each(|(k, v)| {
-                let split = v.split(",").collect::<Vec<&str>>();
-                let nb_value = split.len();
-                comment_len += (k.len() * nb_value) + (1 * nb_value) + (4 * nb_value);
-                split.into_iter().for_each(|s| comment_len += s.len())
+                comment_len += 4 * v.len(); // 4 -> value len in bytes, times nb value for key
+                comment_len += k.len() * v.len();
+                for s in v {
+                    comment_len += 1 + s.len()
+                }
             });
         4 + self.vendor_name.len() + 4 + comment_len
     }
@@ -393,8 +394,7 @@ impl RawSize for VorbisCommentBlock {
         bytes.append(&mut self.vendor_name.clone().into_bytes());
         bytes.append(&mut (self.comments.len() as u32).to_le_bytes().to_vec());
         for (k, v) in self.comments.iter() {
-            let split = v.split(",").collect::<Vec<&str>>();
-            for value in split {
+            for value in v {
                 let format = format!("{}={}", k, value);
                 println!("format : {}", format);
                 bytes.append(&mut (format.len() as u32).to_le_bytes().to_vec());

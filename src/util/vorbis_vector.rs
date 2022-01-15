@@ -15,7 +15,7 @@ impl VorbisVector {
         }
     }
 
-    pub (crate) fn iter(&self) -> impl Iterator<Item = (&String, String)>  {
+    pub (crate) fn iter(&self) -> impl Iterator<Item = (&String, &Vec<String>)>  {
         VorbisVectorIter {
             vorbis_vector: self,
             index: 0
@@ -68,7 +68,7 @@ pub (crate) struct VorbisVectorIter<'a> {
 
 
 impl<'a> Iterator for VorbisVectorIter<'a> {
-    type Item = (&'a String, String);
+    type Item = (&'a String, &'a Vec<String>);
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.index >= self.vorbis_vector.len(){
@@ -76,7 +76,7 @@ impl<'a> Iterator for VorbisVectorIter<'a> {
         }else {
             let (k,v) = self.vorbis_vector.comments.get(self.index).unwrap();
             self.index +=1;
-            Some((k, v.join(",")))
+            Some((k, v))
         }
     }
 }

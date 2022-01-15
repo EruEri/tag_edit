@@ -52,7 +52,7 @@
 //! 
 //! ```
 //! use tag_edit::FlacTag;
-//! let mut flac_tag = FlacTag::from_path("file_test/flac/01. DO IT, DO IT (24bit-48kHz).flac").unwrap();
+//! let mut flac_tag = FlacTag::from_path("file_test/flac/02. believe in myself.flac").unwrap();
 //! if let Some(_artist) = flac_tag.artist(){
 //!     // do something
 //! }
@@ -100,6 +100,8 @@ mod test {
     use std::{io::{Error, Read, Write}, fs::OpenOptions, collections::HashMap};
 
     use crate::{id3_tag_builder::ID3TagBuilder, FlacTag, ID3TAG};
+    use crate::PictureType;
+    use crate::PictureType::*;
 
     #[test]
     fn tag_builder() -> Result<(), Error>{
@@ -136,7 +138,7 @@ mod test {
   
     }
 
-    //#[test]
+    #[test]
     fn flac_read() -> Result<(), Error>{
         if let Some(mut flactag) = FlacTag::from_path(FLAC_FILE) {
             //flactag.set_title("Darwin game opening");
@@ -144,12 +146,9 @@ mod test {
             //flactag.set_artist("Nanjo Yoshino");
             //flactag.add_artist("An other artist");
             //flactag.set_album_artist("Yohsino Nanjo");
-            assert!(flactag.get_custom_field("Key").is_none());
-            flactag.set_custom_field("Key", "Value");
-            assert!(flactag.get_custom_field("Key").is_some());
-            flactag.remove_custom_field("Key");
-            println!("Value :=> {:?}", flactag.get_custom_field("Key"));
-            assert!(flactag.get_custom_field("Key").is_none());
+            flactag.remove_all_pictures();
+            flactag.add_picture_from_path("file_test/image/2020.jpeg", CoverFront, "jpeg", None, 1000, 867, 24, None)?;
+            flactag.write_flac("file_test/output/testim.flac");
             Ok(())
             //assert_eq!(flactag.title(), Some("CHAIN".to_string()))
         }else {
