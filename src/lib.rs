@@ -116,11 +116,12 @@ mod test {
             //flactag.set_artist("Nanjo Yoshino");
             //flactag.add_artist("An other artist");
             //flactag.set_album_artist("Yohsino Nanjo");
-            let album_name = flactag.album().unwrap();
-            println!("bytes : {:?}", album_name.into_bytes());
-            println!("bytes : {:?}", "20×20".to_string().into_bytes());
-            //assert_eq!(flactag.artist().unwrap(), String::from("Nanjo Yoshino,An other artist"));
-            //flactag.write_flac(OUTPUT_F_TEST)?;
+            assert!(flactag.get_custom_field("Key").is_none());
+            flactag.set_custom_field("Key", "Value");
+            assert!(flactag.get_custom_field("Key").is_some());
+            flactag.remove_custom_field("Key");
+            println!("Value :=> {:?}", flactag.get_custom_field("Key"));
+            assert!(flactag.get_custom_field("Key").is_none());
             Ok(())
             //assert_eq!(flactag.title(), Some("CHAIN".to_string()))
         }else {

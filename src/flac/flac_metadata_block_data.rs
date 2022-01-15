@@ -464,7 +464,11 @@ impl VorbisCommentBlock {
     }
 
     pub(crate) fn get_custom_field(&self, field: &str) -> Option<String> {
-        self.comments.get(field).and_then(|s| Some(s.clone()))
+        self.comments.get(field).and_then(|s| Some(s))
+    }
+
+    pub(crate) fn get_bpm(&self) -> Option<String> {
+        self.comments.get("BPM")
     }
 }
 
@@ -796,10 +800,10 @@ impl FlacMetadataBlockData {
                 let _ = buffer.drain(0..4).collect::<Vec<u8>>().u32_from_be()?;
                 let size = size - (4 + 4 + mime_type_len + 4 + description_len + 20);
                 let pict_data = buffer.drain(0..(size as usize)).collect::<Vec<u8>>();
-                println!(
-                    "width : {}\nheight : {}\ncolor_depth : {}\nnumber_of_color : {}",
-                    pict_width, pict_height, color_depth, number_of_color
-                );
+                // println!(
+                //     "width : {}\nheight : {}\ncolor_depth : {}\nnumber_of_color : {}",
+                //     pict_width, pict_height, color_depth, number_of_color
+                // );
                 Some(Self::PICTURE(PictureBlock {
                     picture_type,
                     mime_type,

@@ -280,6 +280,15 @@ impl FlacTag {
         })
     }
 
+    pub fn bpm(&self) -> Option<String> {
+        self.metadata_blocks.iter().find_map(|flac_block| {
+            match flac_block.as_vorbis_comments_block() {
+                None => None,
+                Some(vorbis) => vorbis.get_bpm(),
+            }
+        })
+    }
+
     pub fn disc(&self) -> Option<String> {
         self.metadata_blocks.iter().find_map(|flac_block| {
             match flac_block.as_vorbis_comments_block() {
@@ -817,7 +826,7 @@ impl FlacTag {
     /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
     /// flactag.set_comment("comment1");
     /// flactag.add_comment("comment2");
-    /// assert_eq!(flactag.comment().unwrap(), "comment1,comment2");
+    /// assert_eq!(flactag.comments().unwrap(), "comment1,comment2");
     /// 
     pub fn add_comment(&mut self, content: &str) {
         if let Some(flac_vorbis_block) = self.get_block_mut(&VORBISCOMMENT) {
@@ -917,7 +926,7 @@ impl FlacTag {
     /// See the [FlacTag::add_picture] method to add an image from a binary picture data
     /// 
     /// Arguments
-    /// *` picture_path` : image path
+    /// * `picture_path` : image path
     /// * `picture_type` : see [tag_edit::PictureType]
     /// * `mime_type` : jpeg | png | ... 
     /// * `description` : an optional description of the image
@@ -948,6 +957,19 @@ impl FlacTag {
 }
 
 impl FlacTag {
+    /// Remove the title (key : "TITLE")
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_title();
+    /// assert!(flactag.title().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_title(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -961,7 +983,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
-
+    /// Remove the artist (key : "ARTIST")
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_artist();
+    /// assert!(flactag.artist().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_artist(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -975,7 +1009,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
-
+    /// Remove the artist (key : "ARTIST")
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_artist();
+    /// assert!(flactag.artist().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_album_artist(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -989,7 +1035,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
-
+    /// Remove the album (key : "ALBUM")
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_album();
+    /// assert!(flactag.album().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_album(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -1003,7 +1061,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
-
+    /// Remove the genre (key : "GENRE")
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_genre();
+    /// assert!(flactag.genre().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_genre(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -1017,6 +1087,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
+    /// Remove the copyright (key : "COPYRIGHT")
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_copyright();
+    /// assert!(flactag.copyright().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_copyright(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -1030,6 +1113,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
+    /// Remove the date (key : "DATE")
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_date();
+    /// assert!(flactag.date().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_date(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -1043,6 +1139,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
+    /// Remove the composer (key : "COMPOSER")
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_composer();
+    /// assert!(flactag.composer().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_composer(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -1056,6 +1165,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
+    /// Remove the disc (key : "DISC")
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_disc();
+    /// assert!(flactag.disc().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_disc(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -1069,6 +1191,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
+    /// Remove the total disc number (key : "DISCTOTAL")
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_total_disc();
+    /// assert!(flactag.total_disc().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_total_disc(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -1082,6 +1217,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
+    /// Remove the track position in the disc (key : "TRACKPOSITION")
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_track_position();
+    /// assert!(flactag.track_position().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_track_position(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -1095,6 +1243,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
+    /// Remove the copyright (key : "COPYRIGHT")
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_bpm();
+    /// assert!(flactag.bpm().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_bpm(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -1108,6 +1269,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
+    /// Remove the total track number contained in the disc (key : "TRACKTOTAL")
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_copyright();
+    /// assert!(flactag.copyright().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_total_track(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -1121,6 +1295,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
+    /// Remove the comments (key : "COMMENT")
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_comments();
+    /// assert!(flactag.comments().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_comments(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -1134,6 +1321,19 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
+    /// Remove the organisation (key : "ORGANIZATION")
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_organisation();
+    /// assert!(flactag.organisation().is_none());
+    /// 
+    /// 
+    /// ```
     pub fn remove_organisation(&mut self) {
         self.metadata_blocks
             .iter_mut()
@@ -1147,24 +1347,53 @@ impl FlacTag {
             })
             .and_then(|flac_block| Some(flac_block.update_size()));
     }
-
+    /// Remove all pictures in the flac file
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// flactag.remove_all_pictures();
+    /// assert!(flactag.pictures().is_empty());
+    /// 
+    /// 
+    /// ```
     pub fn remove_all_pictures(&mut self) {
         self.metadata_blocks
             .retain(|flac_block| flac_block.block_type() != &FlacMetadataBlockType::PICTURE)
     }
+    /// Remove the content for an given key
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use tag_edit::FlacTag;
+    /// 
+    /// let mut flactag = FlacTag::from_path("file_test/flac/03. Sleepless.flac").unwrap();
+    /// assert!(flactag.get_custom_field("Key").is_none());
+    /// flactag.set_custom_field("Key", "Value");
+    /// assert!(flactag.get_custom_field("Key").is_some());
+    /// flactag.remove_custom_field("Key");
+    /// assert!(flactag.get_custom_field("Key").is_none());
+    /// 
+    /// 
+    /// 
+    /// ```
     pub fn remove_custom_field(&mut self, field : &str) /*-> Option<String>*/ {
         self.metadata_blocks
         .iter_mut()
         .find(|f| f.block_type() == &VORBISCOMMENT)
         .and_then(|flac_block| {
-            let value = flac_block.as_vorbis_comments_block_mut()
+            flac_block.as_vorbis_comments_block_mut()
             .unwrap()
             .remove_custom_field(field);
-            Some((flac_block, value))
+            Some(flac_block)
         })
-        .and_then(|(f, value)| {
+        .and_then(|f| {
             f.update_size();
-            Some(value)
+            Some(())
         });
     }
 }

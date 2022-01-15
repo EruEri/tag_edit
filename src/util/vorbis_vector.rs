@@ -42,7 +42,8 @@ impl VorbisVector {
     }
 
     pub (crate) fn remove(&mut self, key : &str) {
-        self.comments.retain(|(k,_)| k != key)
+        let key = key.to_uppercase();
+        self.comments.retain(|(k,_)| k != &key)
     }
 
     pub (crate) fn _get_raw(&self, key : &str) -> Option<&Vec<String>> {

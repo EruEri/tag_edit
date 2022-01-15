@@ -63,8 +63,6 @@ impl FlacMetadataBlock {
         let block_type = FlacMetadataBlockType::from_raw_value(block_info & BLOCK_TYPE_FLAG)?;
         let len_bytes = buffer.drain(0..3).collect::<Vec<u8>>();
         let len = u24::from_be_bytes(len_bytes.try_into().unwrap());
-        println!("block type : {:?}", block_type);
-        println!("metadata len : {}", len.value());
         let data = FlacMetadataBlockData::new(buffer, len.value(), &block_type)?;
         Some((
             Self {
