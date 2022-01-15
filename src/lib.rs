@@ -146,6 +146,8 @@ mod test {
             //flactag.set_artist("Nanjo Yoshino");
             //flactag.add_artist("An other artist");
             //flactag.set_album_artist("Yohsino Nanjo");
+            flactag.add_genre("An Junne Genre");
+            flactag.set_album("An Junna Album : 20x20");
             flactag.remove_all_pictures();
             flactag.add_picture_from_path("file_test/image/2020.jpeg", CoverFront, "jpeg", None, 1000, 867, 24, None)?;
             flactag.write_flac("file_test/output/testim.flac");

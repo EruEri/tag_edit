@@ -396,7 +396,7 @@ impl RawSize for VorbisCommentBlock {
         for (k, v) in self.comments.iter() {
             for value in v {
                 let format = format!("{}={}", k, value);
-                println!("format : {}", format);
+                //println!("format : {}", format);
                 bytes.append(&mut (format.len() as u32).to_le_bytes().to_vec());
                 bytes.append(&mut format.into_bytes());
             }
@@ -616,7 +616,7 @@ impl PictureBlock {
         let mime_type = format!("image/{}", mime_type);
         Self {
             picture_type,
-            mime_type: mime_type.into(),
+            mime_type,
             description,
             pict_width: picture_width,
             pict_height: picture_height,
@@ -633,7 +633,8 @@ impl PictureBlock {
 
 impl RawSize for PictureBlock {
     fn raw_size(&self) -> usize {
-        4 + self.mime_type.len() + self.description.len() + 4 + 4 + 4 + 4 + 4 + self.pict_data.len()
+        4 + 4 + self.mime_type.len() + 4 + self.description.len() + 4 + 4 + 4 + 4 + 4 + self.pict_data.len()
+        //self.raw_bytes().len()
     }
 
     fn raw_bytes(&self) -> Vec<u8> {

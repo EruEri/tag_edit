@@ -64,7 +64,7 @@ impl FlacTag {
             if last_block.block_type() == &PADDING {
                 block.set_last(false);
                 let length = self.metadata_blocks.len();
-                self.metadata_blocks.insert(length - 2, block);
+                self.metadata_blocks.insert(length - 1, block);
             } else {
                 last_block.set_last(false);
                 block.set_last(true);
