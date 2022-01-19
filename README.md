@@ -3,7 +3,7 @@ Personal project for editing tag from mp3 and flac files
 *** 
 A dependency-free library written in Rust that allows you to edit and create tag
 
-Currently only ID3.v2.3 adn Flac supported
+Currently only ID3.v2.3 and Flac supported
 ***
 ## Examples
 
