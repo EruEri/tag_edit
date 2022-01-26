@@ -9,10 +9,10 @@ Currently only ID3.v2.3 and Flac supported
 
 ### Reading and writting tag from mp3 file
 ```rust
-use tag_edit::Metadata;
+use tag_edit::ID3TAG;
 
 
-let mut metadata = Metadata::from_path("file_test/mp3/1-01 Dark seeks light.mp3").unwrap();
+let mut metadata = ID3TAG::from_path("file_test/mp3/1-01 Dark seeks light.mp3").unwrap();
 if let Some(_artist) = metadata.artist(){
     // do something
 }
