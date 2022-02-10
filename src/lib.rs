@@ -149,7 +149,7 @@ mod test {
             flactag.add_genre("An Junne Genre");
             flactag.set_album("An Junna Album : 20x20");
             flactag.remove_all_pictures();
-            flactag.add_picture_from_path("file_test/image/2020.jpeg", CoverFront, "jpeg", None, 1000, 867, 24, None)?;
+            flactag.add_picture_from_path("file_test/image/2020.jpeg", CoverFront, crate::PictureFormat::JPEG, None, 1000, 867, 24, None)?;
             flactag.write_flac("file_test/output/testim.flac");
             Ok(())
             //assert_eq!(flactag.title(), Some("CHAIN".to_string()))

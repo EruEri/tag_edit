@@ -180,7 +180,7 @@ impl ID3TagBuilder {
     /// See the [ID3TagBuilder::add_picture_from_file] method to add an image from a file
     ///
     /// Arguments
-    /// * `image_format` : (PNG | JPEG)
+    /// * `image_format` : 
     /// * `picture_data` : pictures's raw bytes
     /// * `picture_type` :
     /// * `description`  : image short description
@@ -193,7 +193,7 @@ impl ID3TagBuilder {
         description: Option<String>,
     ) -> &mut Self {
         self.id3_tag
-            .add_picture(&image_format, picture_data, picture_type, description);
+            .add_picture(image_format, picture_data, picture_type, description);
         self
     }
 
@@ -202,7 +202,7 @@ impl ID3TagBuilder {
     /// See the [ID3TagBuilder::add_picture] method to add an image with raw bytes
     /// Arguments
     /// * `file_path`    : path to picture
-    /// * `image_format` : (PNG | JPEG)
+    /// * `image_format` : 
     /// * `picture_type` :
     /// * `description`  : image short description
     ///

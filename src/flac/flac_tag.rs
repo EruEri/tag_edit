@@ -1,6 +1,7 @@
 use std::io::{Error, Write};
 use std::{fs::OpenOptions, io::Read};
 
+use crate::PictureFormat;
 use crate::id3::code::picture_code::picture_type::PictureType;
 use crate::util::traits::{RawSize, StringConvert};
 
@@ -899,7 +900,7 @@ impl FlacTag {
     pub fn add_picture(
         &mut self,
         picture_type: PictureType,
-        mime_type: &str,
+        mime_type: PictureFormat,
         description: Option<&str>,
         picture_width: u32,
         picture_height: u32,
@@ -940,7 +941,7 @@ impl FlacTag {
         &mut self,
         picture_path : &str,
         picture_type: PictureType,
-        mime_type: &str,
+        mime_type: PictureFormat,
         description: Option<&str>,
         picture_width: u32,
         picture_height: u32,

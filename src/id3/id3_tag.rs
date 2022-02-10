@@ -362,37 +362,37 @@ impl ID3TAG {
     /// See the [ID3TAG::add_picture_from_file] method to add an image from a file
     ///
     /// Arguments
-    /// * `image_format` : (PNG | JPEG)
+    /// * `image_format` : 
     /// * `picture_data` : pictures's raw bytes
     /// * `picture_type` :
     /// * `description`  : image short description
     ///
     pub fn add_picture(
         &mut self,
-        image_format: &PictureFormat,
+        image_format: PictureFormat,
         picture_data: &Vec<u8>,
         picture_type: Option<PictureType>,
         description: Option<String>,
     ) {
         let apic_value =
-            AttachedPictureFrame::new(image_format, picture_data, picture_type, description);
+            AttachedPictureFrame::new(&image_format, picture_data, picture_type, description);
         let frame = (ID3FRAMEID::APIC, FrameValue::APF(apic_value)).into();
         self.frames.push(frame);
         self.recalcule_size()
     }
-    /// Add an image to the tag's attached pictures where the picture is in a file
+    /// Add an image to the tag's attached pictures from the image file
     ///
     /// See the [ID3TAG::add_picture] method to add an image with raw bytes
     /// Arguments
     /// * `file_path`    : path to picture
-    /// * `image_format` : (PNG | JPEG)
+    /// * `image_format` : 
     /// * `picture_type` :
     /// * `description`  : image short description
     ///
     pub fn add_picture_from_file(
         &mut self,
         file_path: &str,
-        image_format: &PictureFormat,
+        image_format: PictureFormat,
         picture_type: Option<PictureType>,
         description: Option<String>,
     ) -> Result<(), Error> {

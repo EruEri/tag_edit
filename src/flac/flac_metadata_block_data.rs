@@ -1,7 +1,7 @@
 use crate::{
     id3::code::picture_code::picture_type::PictureType,
     util::{traits::{StringConvert, ToU16, ToU32}, vorbis_vector::VorbisVector},
-    util::{number::u24, traits::RawSize},
+    util::{number::u24, traits::RawSize}, PictureFormat,
 };
 use std::{convert::TryInto, fmt::Display, str::FromStr};
 
@@ -603,7 +603,7 @@ pub(crate) struct PictureBlock {
 impl PictureBlock {
     pub(crate) fn new(
         picture_type: PictureType,
-        mime_type: &str,
+        mime_type: PictureFormat,
         description: Option<&str>,
         picture_width: u32,
         picture_height: u32,
@@ -613,7 +613,7 @@ impl PictureBlock {
     ) -> Self {
         let description = match description {None => "".to_owned(), Some(s) => s.into()};
         let number_of_color = match number_color_used {None => 0, Some(n) => n};
-        let mime_type = format!("image/{}", mime_type);
+        let mime_type = mime_type.to_mime_string();
         Self {
             picture_type,
             mime_type,
