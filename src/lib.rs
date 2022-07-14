@@ -84,6 +84,7 @@ pub (crate) mod id3;
 pub (crate) mod tag_error;
 pub (crate) mod util;
 pub (crate) mod flac;
+pub (crate) mod m4a;
 
 
 
